@@ -51,8 +51,8 @@ macOS 업데이트나 앱 파일 교체 후에는 권한이 풀릴 수 있습니
 
 ## 다운로드
 
-- 1.3: 소스를 직접 빌드해주세요. (Xcode에서 열고 Product > Build)
-- [1.2 다운로드](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) — OS X 10.9 이상, macOS Sequoia 15.6 이상에서는 동작하지 않습니다.
+- [1.3 다운로드](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip) — macOS 10.13 이상
+- [1.2 다운로드](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) (원본 저장소) — OS X 10.9 이상, macOS Sequoia 15.6 이상에서는 동작하지 않습니다.
 
 ## 문의
 
