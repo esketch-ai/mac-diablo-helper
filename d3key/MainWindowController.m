@@ -58,10 +58,11 @@
     
     // check accessiblity
     if (!AXIsProcessTrusted()) {
-        NSAlert *alert = [NSAlert alertWithMessageText:@"사용할 수 없음" defaultButton:@"Ok" alternateButton:nil otherButton:nil informativeTextWithFormat:@"손쉬운 사용 허용 후 다시 실행해주세요"];
-        [alert beginSheetModalForWindow:self.window completionHandler:^(NSModalResponse returnCode) {
-            [NSApp terminate:nil];
-        }];
+        NSAlert *alert = [[NSAlert alloc] init];
+        alert.messageText = @"손쉬운 사용 권한 필요";
+        alert.informativeText = @"시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용에서 이 앱을 허용해주세요.\n\n이미 목록에 있는데도 동작하지 않으면, 목록에서 앱을 제거(-)한 뒤 다시 추가(+)해주세요. (macOS 업데이트나 앱 교체 후 필요할 수 있습니다)\n\n허용하면 자동으로 활성화됩니다.";
+        [alert addButtonWithTitle:@"확인"];
+        [alert beginSheetModalForWindow:self.window completionHandler:nil];
     }
 }
 

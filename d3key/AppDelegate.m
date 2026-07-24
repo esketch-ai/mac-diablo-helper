@@ -29,6 +29,7 @@
 @implementation AppDelegate
 {
     NSEvent *_gEvent;
+    pid_t _targetPid; // 시작키를 누른 시점의 최전면 앱 (D3 네이티브, GPTK/Wine 위의 D4 등)
 }
 
 - (void) awakeFromNib {
@@ -66,10 +67,13 @@
     [self.windowController showWindow:self];
     
     // 손쉬운 사용 설정 안되어 있을 경우 Dialog open
-    NSDictionary *options = @{(id)CFBridgingRelease(kAXTrustedCheckOptionPrompt): @YES};
-    BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((CFDictionaryRef) CFBridgingRetain(options));
+    NSDictionary *options = @{(__bridge id)kAXTrustedCheckOptionPrompt: @YES};
+    BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef)options);
     if (accessibilityEnabled) {
         [self registerEventMonitor];
+    } else {
+        // 허용될 때까지 폴링하다가 허용되면 자동 등록 (앱 재시작 불필요)
+        [self waitForAccessibility];
     }
 }
 
@@ -119,7 +123,10 @@
 
 - (void) startTimer {
     NSLog(@"start timers");
-    
+
+    // 시작 시점의 최전면 앱을 타깃으로 고정 — 게임에서 다른 앱으로 전환하면 발송 중단
+    _targetPid = [[NSWorkspace sharedWorkspace] frontmostApplication].processIdentifier;
+
     for (int i = 1; i < 7; i++) {
         [self addTimer:[NSString stringWithFormat:@"skillKey%d", i] andWith:[NSString stringWithFormat:@"skillDelay%d", i]];
     }
@@ -172,38 +179,30 @@
     BOOL mouseLeftKey = [[userInfo objectForKey:@"mouseLeftKey"] boolValue];
     BOOL mouseRightKey = [[userInfo objectForKey:@"mouseRightKey"] boolValue];
     
-    if ([[NSRunningApplication runningApplicationsWithBundleIdentifier:kDiablo3AppId] count]) {
-        pid_t pid = [(NSRunningApplication*)[[NSRunningApplication runningApplicationsWithBundleIdentifier:kDiablo3AppId] objectAtIndex:0] processIdentifier];
-        
-        CGEventRef qKeyUp;
-        CGEventRef qKeyDown;
-        ProcessSerialNumber psn;
-        
-        // get TextEdit.app PSN
-        OSStatus err = GetProcessForPID(pid, &psn);
-        if (err == noErr) {
-            // mouse event
-            if (mouseRightKey) {
-                NSLog(@"fire event: mouseRightKey, %tu", delay);
-                [self rightClick];
-            } else if (mouseLeftKey) {
-                NSLog(@"fire event: mouseLeftKey, %tu", delay);
-                [self leftClick];
-            } else {
-                NSLog(@"fire event: %@, %tu", [[D3KeyConfigService sharedService] stringWithKeycode:keyCode], delay);
-                //resultcode = SetFrontProcess(&psn);
-                // see HIToolbox/Events.h for key codes
-                qKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)keyCode, true);
-                qKeyUp = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)keyCode, false);
-                
-                CGEventPostToPSN(&psn, qKeyDown);
-                CGEventPostToPSN(&psn, qKeyUp);
-                
-                CFRelease(qKeyDown);
-                CFRelease(qKeyUp);
-            }
+    // 시작 시점에 고정한 타깃 앱이 최전면일 때만 발송 (다른 앱으로 키 입력이 새는 것 방지)
+    // GPTK/Wine 게임은 블리자드 번들 ID가 없으므로 pid로 비교
+    // Sequoia 15.6+에서 PSN/PID 타깃 주입(CGEventPostToPSN)이 동작하지 않아
+    // 마우스 이벤트와 동일한 CGEventPost(HID tap) 방식으로 통일
+    NSRunningApplication *front = [[NSWorkspace sharedWorkspace] frontmostApplication];
+    if (front.processIdentifier == _targetPid) {
+        // mouse event
+        if (mouseRightKey) {
+            NSLog(@"fire event: mouseRightKey, %tu", delay);
+            [self rightClick];
+        } else if (mouseLeftKey) {
+            NSLog(@"fire event: mouseLeftKey, %tu", delay);
+            [self leftClick];
         } else {
-            NSLog(@"error? %@", [NSError errorWithDomain:NSOSStatusErrorDomain code:err userInfo:nil]);
+            NSLog(@"fire event: %@, %tu", [[D3KeyConfigService sharedService] stringWithKeycode:keyCode], delay);
+            // see HIToolbox/Events.h for key codes
+            CGEventRef qKeyDown = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)keyCode, true);
+            CGEventRef qKeyUp = CGEventCreateKeyboardEvent(NULL, (CGKeyCode)keyCode, false);
+
+            CGEventPost(kCGHIDEventTap, qKeyDown);
+            CGEventPost(kCGHIDEventTap, qKeyUp);
+
+            CFRelease(qKeyDown);
+            CFRelease(qKeyUp);
         }
     }
 }
@@ -242,6 +241,18 @@
     }];
 }
 
+- (void) waitForAccessibility {
+    __weak typeof(self) weakSelf = self;
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        if (AXIsProcessTrusted()) {
+            NSLog(@"accessibility granted");
+            [weakSelf registerEventMonitor];
+        } else {
+            [weakSelf waitForAccessibility];
+        }
+    });
+}
+
 #pragma mark event monitor
 
 - (void) registerEventMonitor {
@@ -251,12 +262,9 @@
     }
     NSLog(@"register global key event monitor");
     _gEvent = [NSEvent addGlobalMonitorForEventsMatchingMask:(NSKeyDownMask|NSFlagsChangedMask) handler:^(NSEvent *event) {
-        
-        if (![[NSRunningApplication runningApplicationsWithBundleIdentifier:kDiablo3AppId] count]) {
-            NSLog(@"Diablo3 is not running");
-            return;
-        }
-        
+
+        // 디아블로3 실행 여부 게이트 제거 — GPTK/Wine으로 실행한 D4는
+        // com.blizzard.* 번들 ID가 없어 감지 불가. 대신 시작 시점의 최전면 앱을 타깃으로 고정함.
         NSUInteger keyCode = event.keyCode;
         if (![self isTimerRunning] && [self.keyConfig isStartKey:keyCode]) {
             // send start noti
