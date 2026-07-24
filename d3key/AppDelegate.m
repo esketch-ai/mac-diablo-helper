@@ -38,7 +38,7 @@
     //self.statusBar.title = @"D3A";
     
     // you can also set an image
-    self.statusBar.image = [NSImage imageNamed:@"d3a_icon_16x16.tiff"];
+    self.statusBar.image = [NSImage imageNamed:@"StatusBar"];
     
     self.statusBar.menu = self.statusMenu;
     self.statusBar.highlightMode = YES;
@@ -262,6 +262,29 @@
     }
     NSLog(@"register global key event monitor");
     _gEvent = [NSEvent addGlobalMonitorForEventsMatchingMask:(NSKeyDownMask|NSFlagsChangedMask) handler:^(NSEvent *event) {
+
+        if (event.keyCode == 0x7A || event.keyCode == 0x78 || event.keyCode == 0x63 || event.keyCode == 0x76 || event.keyCode == 0x60) {
+            // F1, F2, F3, F4, F5, change preset
+            NSInteger presetNum = 0;
+            switch (event.keyCode) {
+                case 0x7A:
+                    presetNum = 0;
+                    break;
+                case 0x78:
+                    presetNum = 1;
+                    break;
+                case 0x63:
+                    presetNum = 2;
+                    break;
+                case 0x76:
+                    presetNum = 3;
+                    break;
+                case 0x60:
+                    presetNum = 4;
+                    break;
+            }
+            [self.windowController changePreset:presetNum];
+        }
 
         // 디아블로3 실행 여부 게이트 제거 — GPTK/Wine으로 실행한 D4는
         // com.blizzard.* 번들 ID가 없어 감지 불가. 대신 시작 시점의 최전면 앱을 타깃으로 고정함.

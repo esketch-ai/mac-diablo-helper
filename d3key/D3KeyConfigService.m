@@ -24,7 +24,7 @@ static CGKeyCode _keyCodes[] = {
     0x50, 0x5A,
     0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x67, 0x69, 0x6A, 0x6B, 0x6D, 0x6F,
     0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A,
-    0x7B, 0x7C, 0x7D, 0x7E
+    0x7B, 0x7C, 0x7D, 0x7E, 0xFF
 };
 static NSArray *_keyStrings;
 
@@ -58,7 +58,7 @@ static NSArray *_keyStrings;
                     @"F19", @"F20",
                     @"F5", @"F6", @"F7", @"F3", @"F8", @"F9", @"F11", @"F13", @"F16", @"F14", @"F10", @"F12",
                     @"F15", @"Help", @"Home", @"PageUp", @"ForwardDelete", @"F4", @"End", @"F2", @"PageDown", @"F1",
-                    @"LeftArrow", @"RightArrow", @"DownArrow", @"UpArrow"
+                    @"LeftArrow", @"RightArrow", @"DownArrow", @"UpArrow", @"한/영"
                     ];
     assert(sizeof(_keyCodes) != [_keyStrings count]);
 }
@@ -67,14 +67,14 @@ static NSArray *_keyStrings;
 - (CGKeyCode) keyCodeWithString:(NSString *) string {
     NSUInteger ret = [_keyStrings indexOfObject:string];
     if (ret == NSNotFound) {
-        return 0xFF;
+        return 0xFE;
     } else {
         return _keyCodes[ret];
     }
 }
 
 - (NSString *) stringWithKeycode:(CGKeyCode) keyCode {
-    int len = sizeof(_keyCodes);
+    int len = sizeof(_keyCodes) / sizeof(CGKeyCode);
     for (int i = 0; i < len; i++) {
         CGKeyCode code = _keyCodes[i];
         if (code == keyCode) {
@@ -91,6 +91,13 @@ static NSArray *_keyStrings;
     D3KeyConfig *config;
     if (data) {
         config = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+        key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
+        NSString *memo = [defaults objectForKey:key];
+        if (memo) {
+            config.memo = memo;
+        } else {
+            config.memo = @"";
+        }
     }
     if (!config) {
         NSLog(@"load default config");
@@ -105,6 +112,9 @@ static NSArray *_keyStrings;
     NSData *data = [NSKeyedArchiver archivedDataWithRootObject:config];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:data forKey:key];
+    [defaults synchronize];
+    key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
+    [defaults setObject:config.memo forKey:key];
     [defaults synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:kD3KeyConfigChangedNotification object:nil userInfo:@{@"configId":configId}];
 }

@@ -14,7 +14,7 @@
     IBOutlet NSSegmentedControl *configIdSegment;
     IBOutlet NSSegmentedControl *activeSegment;
     
-    IBOutlet NSButton *activateButton;
+    IBOutlet NSTextField *memoField;
     
     IBOutlet NSTextField *startKeyField;
     
@@ -43,7 +43,7 @@
     IBOutlet NSTextField *mouseRightDelayField;
     
 }
-
+- (void) changePreset:(NSInteger)presetNum;
 - (IBAction) selectConfigIdSegemnt:(id)sender;
 - (IBAction) selectActiveSegment:(id)sender;
 

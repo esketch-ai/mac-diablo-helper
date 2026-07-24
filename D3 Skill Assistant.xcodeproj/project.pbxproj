@@ -22,10 +22,6 @@
 		B2E66EE61C6D9AB000134E90 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = B2E66EE41C6D9AB000134E90 /* MainMenu.xib */; };
 		B2E66EF11C6D9AB000134E90 /* d3keyTests.m in Sources */ = {isa = PBXBuildFile; fileRef = B2E66EF01C6D9AB000134E90 /* d3keyTests.m */; };
 		B2E66EFC1C6D9AB000134E90 /* d3keyUITests.m in Sources */ = {isa = PBXBuildFile; fileRef = B2E66EFB1C6D9AB000134E90 /* d3keyUITests.m */; };
-		CFFB6091224D02150033C803 /* d3a_icon_256x256@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = CFFB608D224D02150033C803 /* d3a_icon_256x256@2x.tiff */; };
-		CFFB6092224D02150033C803 /* d3a_icon_16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = CFFB608E224D02150033C803 /* d3a_icon_16x16.tiff */; };
-		CFFB6093224D02150033C803 /* d3a_icon_16x16@2x.tiff in Resources */ = {isa = PBXBuildFile; fileRef = CFFB608F224D02150033C803 /* d3a_icon_16x16@2x.tiff */; };
-		CFFB6094224D02150033C803 /* d3a_icon_256x256.tiff in Resources */ = {isa = PBXBuildFile; fileRef = CFFB6090224D02150033C803 /* d3a_icon_256x256.tiff */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,10 +72,6 @@
 		B2E66EF71C6D9AB000134E90 /* D3 Skill Assistant.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "D3 Skill Assistant.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2E66EFB1C6D9AB000134E90 /* d3keyUITests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = d3keyUITests.m; sourceTree = "<group>"; };
 		B2E66EFD1C6D9AB000134E90 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		CFFB608D224D02150033C803 /* d3a_icon_256x256@2x.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "d3a_icon_256x256@2x.tiff"; sourceTree = "<group>"; };
-		CFFB608E224D02150033C803 /* d3a_icon_16x16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = d3a_icon_16x16.tiff; sourceTree = "<group>"; };
-		CFFB608F224D02150033C803 /* d3a_icon_16x16@2x.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = "d3a_icon_16x16@2x.tiff"; sourceTree = "<group>"; };
-		CFFB6090224D02150033C803 /* d3a_icon_256x256.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = d3a_icon_256x256.tiff; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -132,10 +124,6 @@
 		B2E66EDB1C6D9AB000134E90 /* d3key */ = {
 			isa = PBXGroup;
 			children = (
-				CFFB608E224D02150033C803 /* d3a_icon_16x16.tiff */,
-				CFFB608F224D02150033C803 /* d3a_icon_16x16@2x.tiff */,
-				CFFB6090224D02150033C803 /* d3a_icon_256x256.tiff */,
-				CFFB608D224D02150033C803 /* d3a_icon_256x256@2x.tiff */,
 				B2143C6B1C887A3A00AC3E66 /* MSWeakTimer.h */,
 				B2143C6C1C887A3A00AC3E66 /* MSWeakTimer.m */,
 				B2E66EDC1C6D9AB000134E90 /* AppDelegate.h */,
@@ -292,12 +280,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CFFB6094224D02150033C803 /* d3a_icon_256x256.tiff in Resources */,
-				CFFB6092224D02150033C803 /* d3a_icon_16x16.tiff in Resources */,
 				B2E66EE31C6D9AB000134E90 /* Assets.xcassets in Resources */,
 				B2E66EE61C6D9AB000134E90 /* MainMenu.xib in Resources */,
-				CFFB6091224D02150033C803 /* d3a_icon_256x256@2x.tiff in Resources */,
-				CFFB6093224D02150033C803 /* d3a_icon_16x16@2x.tiff in Resources */,
 				B2356B871C869AEF00EA40B1 /* MainWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

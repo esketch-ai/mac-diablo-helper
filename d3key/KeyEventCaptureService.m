@@ -36,6 +36,8 @@
             [[NSNotificationCenter defaultCenter] postNotificationName:NSControlTextDidChangeNotification object:textField];
         } else if (event.keyCode == kVK_ANSI_Q && (event.modifierFlags & NSCommandKeyMask)) {
             // cmd+q, do nothing
+        } else if (event.keyCode == 0x7A || event.keyCode == 0x78 || event.keyCode == 0x63 || event.keyCode == 0x76 || event.keyCode == 0x60) {
+            // F1, F2, F3, F4, F5, do nothing
         } else if (event.keyCode != kVK_Tab && event.keyCode != kVK_Command) {
             textField.stringValue = [[D3KeyConfigService sharedService] stringWithKeycode:event.keyCode];
             [[NSNotificationCenter defaultCenter] postNotificationName:NSControlTextDidChangeNotification object:textField];
