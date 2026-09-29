@@ -3,7 +3,7 @@
 //  d3key
 //
 //  Created by sunghyuk-imac on 2016. 3. 7..
-//  Copyright © 2016년 sunghyuk. All rights reserved.
+//  Updated for Diablo Helper Evolution.
 //
 
 #import "D3KeyConfigService.h"
@@ -30,41 +30,36 @@ static NSArray *_keyStrings;
 
 @implementation D3KeyConfigService
 
-
-+ (D3KeyConfigService *) sharedService {
-    
++ (D3KeyConfigService *)sharedService {
     static id sharedInstance = nil;
-    
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         sharedInstance = [[self alloc] init];
-        
     });
-    
     return sharedInstance;
 }
 
-+ (void) initialize {
-    _keyStrings = @[
-                    @"A", @"S", @"D", @"F", @"H", @"G", @"Z", @"X", @"C", @"V", @"B", @"Q", @"W", @"E", @"R",
-                    @"Y", @"T", @"1", @"2", @"3", @"4", @"6", @"5", @"=", @"9", @"7", @"-", @"8", @"0", @"]", @"0",
-                    @"U", @"[", @"I", @"P", @"L", @"J", @"'", @"K", @";", @"\\", @",", @"/", @"N", @"M", @".",
-                    @"`",
-                    @"KeypadDecimal", @"KeypadMultiply", @"KeypadPlus", @"KeypadClear", @"KeypadDivide", @"KeypadEnter", @"KeypadMinus",
-                    @"KeypadEquals", @"Keypad0", @"Keypad1", @"Keypad2", @"Keypad3", @"Keypad4", @"Keypad5", @"Keypad6", @"Keypad7", @"Keypad8", @"Keypad9",
-                    @"Enter",
-                    @"Tab", @"Space", @"Delete", @"Escape", @"Command", @"Shift", @"CapsLock", @"Option", @"Control", @"RightShift", @"RightOption", @"RightControl", @"Function",
-                    @"F17", @"VolumeUp", @"VolumeDown", @"Mute", @"F18",
-                    @"F19", @"F20",
-                    @"F5", @"F6", @"F7", @"F3", @"F8", @"F9", @"F11", @"F13", @"F16", @"F14", @"F10", @"F12",
-                    @"F15", @"Help", @"Home", @"PageUp", @"ForwardDelete", @"F4", @"End", @"F2", @"PageDown", @"F1",
-                    @"LeftArrow", @"RightArrow", @"DownArrow", @"UpArrow", @"한/영"
-                    ];
-    assert(sizeof(_keyCodes) != [_keyStrings count]);
++ (void)initialize {
+    if (self == [D3KeyConfigService class]) {
+        _keyStrings = @[
+            @"A", @"S", @"D", @"F", @"H", @"G", @"Z", @"X", @"C", @"V", @"B", @"Q", @"W", @"E", @"R",
+            @"Y", @"T", @"1", @"2", @"3", @"4", @"6", @"5", @"=", @"9", @"7", @"-", @"8", @"0", @"]", @"0",
+            @"U", @"[", @"I", @"P", @"L", @"J", @"'", @"K", @";", @"\\", @",", @"/", @"N", @"M", @".",
+            @"`",
+            @"KeypadDecimal", @"KeypadMultiply", @"KeypadPlus", @"KeypadClear", @"KeypadDivide", @"KeypadEnter", @"KeypadMinus",
+            @"KeypadEquals", @"Keypad0", @"Keypad1", @"Keypad2", @"Keypad3", @"Keypad4", @"Keypad5", @"Keypad6", @"Keypad7", @"Keypad8", @"Keypad9",
+            @"Enter",
+            @"Tab", @"Space", @"Delete", @"Escape", @"Command", @"Shift", @"CapsLock", @"Option", @"Control", @"RightShift", @"RightOption", @"RightControl", @"Function",
+            @"F17", @"VolumeUp", @"VolumeDown", @"Mute", @"F18",
+            @"F19", @"F20",
+            @"F5", @"F6", @"F7", @"F3", @"F8", @"F9", @"F11", @"F13", @"F16", @"F14", @"F10", @"F12",
+            @"F15", @"Help", @"Home", @"PageUp", @"ForwardDelete", @"F4", @"End", @"F2", @"PageDown", @"F1",
+            @"LeftArrow", @"RightArrow", @"DownArrow", @"UpArrow", @"한/영"
+        ];
+    }
 }
 
-
-- (CGKeyCode) keyCodeWithString:(NSString *) string {
+- (CGKeyCode)keyCodeWithString:(NSString *)string {
     NSUInteger ret = [_keyStrings indexOfObject:string];
     if (ret == NSNotFound) {
         return 0xFE;
@@ -73,7 +68,7 @@ static NSArray *_keyStrings;
     }
 }
 
-- (NSString *) stringWithKeycode:(CGKeyCode) keyCode {
+- (NSString *)stringWithKeycode:(CGKeyCode)keyCode {
     int len = sizeof(_keyCodes) / sizeof(CGKeyCode);
     for (int i = 0; i < len; i++) {
         CGKeyCode code = _keyCodes[i];
@@ -84,39 +79,94 @@ static NSArray *_keyStrings;
     return @"Unknown";
 }
 
-- (D3KeyConfig *) loadConfig:(NSString *) configId {
-    NSString *key = [NSString stringWithFormat:@"%@_%@", kD3KeyConfigUserDefaultsKey, configId];
+- (D3KeyConfig *)loadConfig:(NSString *)configId {
+    NSString *jsonKey = [NSString stringWithFormat:@"%@_json_%@", kD3KeyConfigUserDefaultsKey, configId];
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSData *data = [defaults objectForKey:key];
-    D3KeyConfig *config;
-    if (data) {
-        config = [NSKeyedUnarchiver unarchiveObjectWithData:data];
-        key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
-        NSString *memo = [defaults objectForKey:key];
-        if (memo) {
-            config.memo = memo;
-        } else {
-            config.memo = @"";
+    NSString *jsonString = [defaults stringForKey:jsonKey];
+    
+    if (jsonString && jsonString.length > 0) {
+        NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+        if (jsonData) {
+            NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:jsonData options:0 error:nil];
+            if (dict && [dict isKindOfClass:[NSDictionary class]]) {
+                return [D3KeyConfig fromDictionary:dict];
+            }
         }
     }
+    
+    // Legacy NSKeyedUnarchiver fallback
+    NSString *key = [NSString stringWithFormat:@"%@_%@", kD3KeyConfigUserDefaultsKey, configId];
+    NSData *data = [defaults objectForKey:key];
+    D3KeyConfig *config = nil;
+    if (data) {
+        @try {
+            config = [NSKeyedUnarchiver unarchiveObjectWithData:data];
+            key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
+            NSString *memo = [defaults objectForKey:key];
+            if (memo) {
+                config.memo = memo;
+            }
+        } @catch (NSException *e) {
+            NSLog(@"Failed to unarchive legacy config: %@", e);
+        }
+    }
+    
     if (!config) {
         NSLog(@"load default config");
         config = [D3KeyConfig defaultKeyConfig];
     }
     
+    [config sanitize];
     return config;
 }
 
-- (void) saveConfig:(D3KeyConfig *) config withConfigId:(NSString *) configId {
-    NSString *key = [NSString stringWithFormat:@"%@_%@", kD3KeyConfigUserDefaultsKey, configId];
-    NSData *data = [NSKeyedArchiver archivedDataWithRootObject:config];
+- (void)saveConfig:(D3KeyConfig *)config withConfigId:(NSString *)configId {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults setObject:data forKey:key];
-    [defaults synchronize];
-    key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
-    [defaults setObject:config.memo forKey:key];
+    
+    // 1. JSON 형식으로 저장 (안전하고 영구적)
+    NSDictionary *dict = [config toDictionary];
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:nil];
+    if (jsonData) {
+        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+        NSString *jsonKey = [NSString stringWithFormat:@"%@_json_%@", kD3KeyConfigUserDefaultsKey, configId];
+        [defaults setObject:jsonString forKey:jsonKey];
+    }
+    
+    // 2. 레거시 형식도 저장 (하위 호환)
+    @try {
+        NSString *key = [NSString stringWithFormat:@"%@_%@", kD3KeyConfigUserDefaultsKey, configId];
+        NSData *data = [NSKeyedArchiver archivedDataWithRootObject:config];
+        [defaults setObject:data forKey:key];
+        
+        key = [NSString stringWithFormat:@"%@_%@_memo", kD3KeyConfigUserDefaultsKey, configId];
+        [defaults setObject:config.memo forKey:key];
+    } @catch (NSException *e) {
+        NSLog(@"Failed to archive legacy format: %@", e);
+    }
+    
     [defaults synchronize];
     [[NSNotificationCenter defaultCenter] postNotificationName:kD3KeyConfigChangedNotification object:nil userInfo:@{@"configId":configId}];
+}
+
+#pragma mark File Export & Import
+
+- (BOOL)exportConfig:(D3KeyConfig *)config toURL:(NSURL *)fileURL error:(NSError **)error {
+    if (!config || !fileURL) return NO;
+    NSDictionary *dict = [config toDictionary];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dict options:NSJSONWritingPrettyPrinted error:error];
+    if (!data) return NO;
+    return [data writeToURL:fileURL options:NSDataWritingAtomic error:error];
+}
+
+- (D3KeyConfig *)importConfigFromURL:(NSURL *)fileURL error:(NSError **)error {
+    if (!fileURL) return nil;
+    NSData *data = [NSData dataWithContentsOfURL:fileURL options:0 error:error];
+    if (!data) return nil;
+    NSDictionary *dict = [NSJSONSerialization JSONObjectWithData:data options:0 error:error];
+    if (!dict || ![dict isKindOfClass:[NSDictionary class]]) {
+        return nil;
+    }
+    return [D3KeyConfig fromDictionary:dict];
 }
 
 @end

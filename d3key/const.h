@@ -18,11 +18,11 @@ static NSString * const kD3KeyStartStopNotification = @"d3keystartstopnote";
 static NSString * const kD3KeyConfigChangedNotification = @"d3keyconfigchanged";
 static NSString * const kD3KeyActivatedNotification = @"d3keyactivated";
 static NSString * const kD3KeyDeactivatedNotification = @"d3keydeactivated";
+static NSString * const kD3AccessibilityStatusChangedNotification = @"d3accessibilitychanged";
+static NSString * const kD3EngineStateChangedNotification = @"d3enginestatechanged";
 
-#ifdef DEBUG
-#   define NSLog(...) NSLog(__VA_ARGS__)
-#else
-#   define NSLog(...)
-#endif
+static const int64_t kD3SyntheticEventMagicTag = 0xD3D4A;
+
+#define NSLog(...) NSLog(__VA_ARGS__)
 
 #endif /* const_h */

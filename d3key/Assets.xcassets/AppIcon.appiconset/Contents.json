@@ -21,6 +21,7 @@
     {
       "idiom" : "mac",
       "size" : "32x32",
+      "filename" : "d3a_icon_32x32@2x.png",
       "scale" : "2x"
     },
     {
@@ -42,8 +43,8 @@
       "scale" : "1x"
     },
     {
-      "size" : "256x256",
       "idiom" : "mac",
+      "size" : "256x256",
       "filename" : "d3a_icon_256x256@2x.png",
       "scale" : "2x"
     },
@@ -56,6 +57,7 @@
     {
       "idiom" : "mac",
       "size" : "512x512",
+      "filename" : "d3a_icon_512x512@2x.png",
       "scale" : "2x"
     }
   ],

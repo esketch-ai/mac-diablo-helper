@@ -3,48 +3,38 @@
 //  d3key
 //
 //  Created by sunghyuk-imac on 2016. 3. 2..
-//  Copyright © 2016년 sunghyuk. All rights reserved.
+//  Updated for Diablo Helper Evolution.
 //
 
 #import <Cocoa/Cocoa.h>
+#import "D3KeyConfig.h"
+#import "D3KeyTextField.h"
 
-@interface MainWindowController : NSWindowController <NSTextFieldDelegate>
-{
-    
-    IBOutlet NSSegmentedControl *configIdSegment;
-    IBOutlet NSSegmentedControl *activeSegment;
-    
-    IBOutlet NSTextField *memoField;
-    
-    IBOutlet NSTextField *startKeyField;
-    
-    IBOutlet NSTextField *stopKeyField1;
-    IBOutlet NSTextField *stopKeyField2;
-    IBOutlet NSTextField *stopKeyField3;
-    IBOutlet NSTextField *stopKeyField4;
-    IBOutlet NSTextField *stopKeyField5;
-    
-    IBOutlet NSTextField *skillKeyField1;
-    IBOutlet NSTextField *skillKeyField2;
-    IBOutlet NSTextField *skillKeyField3;
-    IBOutlet NSTextField *skillKeyField4;
-    IBOutlet NSTextField *skillKeyField5;
-    IBOutlet NSTextField *skillKeyField6;
-    
-    IBOutlet NSTextField *skillDelayField1;
-    IBOutlet NSTextField *skillDelayField2;
-    IBOutlet NSTextField *skillDelayField3;
-    IBOutlet NSTextField *skillDelayField4;
-    IBOutlet NSTextField *skillDelayField5;
-    IBOutlet NSTextField *skillDelayField6;
-    
-    // add by latem
-    IBOutlet NSTextField *mouseLeftDelayField;
-    IBOutlet NSTextField *mouseRightDelayField;
-    
-}
-- (void) changePreset:(NSInteger)presetNum;
-- (IBAction) selectConfigIdSegemnt:(id)sender;
-- (IBAction) selectActiveSegment:(id)sender;
+#import "D3HelperEngine.h"
+#import "D3PresetShareWindowController.h"
+
+@interface MainWindowController : NSWindowController <NSTextFieldDelegate, D3HelperEngineDelegate, D3PresetShareDelegate>
+
+// Legacy XIB outlets to satisfy nib loader
+@property (nonatomic, strong) IBOutlet id configIdSegment;
+@property (nonatomic, strong) IBOutlet id activeSegment;
+@property (nonatomic, strong) IBOutlet id memoField;
+@property (nonatomic, strong) IBOutlet id startKeyField;
+@property (nonatomic, strong) IBOutlet id stopKeyField1, stopKeyField2, stopKeyField3, stopKeyField4, stopKeyField5;
+@property (nonatomic, strong) IBOutlet id skillKeyField1, skillKeyField2, skillKeyField3, skillKeyField4, skillKeyField5, skillKeyField6;
+@property (nonatomic, strong) IBOutlet id skillDelayField1, skillDelayField2, skillDelayField3, skillDelayField4, skillDelayField5, skillDelayField6;
+@property (nonatomic, strong) IBOutlet id mouseLeftDelayField, mouseRightDelayField;
+
+- (void)changePreset:(NSInteger)presetNum;
+- (IBAction)selectConfigIdSegemnt:(id)sender;
+- (IBAction)selectActiveSegment:(id)sender;
+
+- (IBAction)presetSelected:(id)sender;
+- (IBAction)runOpenerTest:(id)sender;
+
+- (IBAction)importConfigFile:(id)sender;
+- (IBAction)exportConfigFile:(id)sender;
+- (IBAction)showHelpWindow:(id)sender;
+- (IBAction)showPresetShareWindow:(id)sender;
 
 @end
