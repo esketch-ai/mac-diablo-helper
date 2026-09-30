@@ -13,6 +13,7 @@
 #import "D3KeyConfigService.h"
 #import "D3EventTapService.h"
 #import "D3HelperEngine.h"
+#import "D3LocalizationManager.h"
 #import <ApplicationServices/ApplicationServices.h>
 #include "const.h"
 
@@ -24,6 +25,92 @@
 @end
 
 @implementation AppDelegate
+
+- (void)updateStatusMenu {
+    if (self.statusMenu == nil) {
+        self.statusMenu = [[NSMenu alloc] initWithTitle:@"DM_Helper"];
+    }
+    [self.statusMenu removeAllItems];
+    
+    // 1. App name & Version
+    NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
+    NSString *appName = [info objectForKey:@"CFBundleDisplayName"] ?: @"DM_Helper";
+    NSString *appVer = [info objectForKey:@"CFBundleShortVersionString"] ?: @"1.5";
+    NSString *aboutTitle = [NSString stringWithFormat:@"%@ v%@", appName, appVer];
+    NSMenuItem *aboutItem = [[NSMenuItem alloc] initWithTitle:aboutTitle action:@selector(statusPreferences:) keyEquivalent:@""];
+    aboutItem.target = self;
+    [self.statusMenu addItem:aboutItem];
+    
+    [self.statusMenu addItem:[NSMenuItem separatorItem]];
+    
+    // 2. Start / Stop Helper toggle
+    BOOL isRunning = [[D3HelperEngine sharedEngine] isRunning];
+    NSString *toggleTitle = isRunning ? D3Loc(@"menu_stop") : D3Loc(@"menu_start");
+    NSMenuItem *toggleItem = [[NSMenuItem alloc] initWithTitle:toggleTitle action:@selector(toggleHelper:) keyEquivalent:@""];
+    toggleItem.target = self;
+    [self.statusMenu addItem:toggleItem];
+    
+    // 3. Opener sequence trigger
+    NSMenuItem *openerItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_opener") action:@selector(triggerOpener:) keyEquivalent:@""];
+    openerItem.target = self;
+    [self.statusMenu addItem:openerItem];
+    
+    [self.statusMenu addItem:[NSMenuItem separatorItem]];
+    
+    // 4. Main Window (Settings)
+    NSMenuItem *prefItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_pref") action:@selector(statusPreferences:) keyEquivalent:@","];
+    prefItem.target = self;
+    [self.statusMenu addItem:prefItem];
+    
+    // 5. Google Sheets Preset Hub
+    NSMenuItem *hubItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_sheet") action:@selector(openPresetShareWindow:) keyEquivalent:@""];
+    hubItem.target = self;
+    [self.statusMenu addItem:hubItem];
+    
+    // 6. User Guide
+    NSMenuItem *guideItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_guide") action:@selector(showHelp:) keyEquivalent:@"/"];
+    guideItem.target = self;
+    [self.statusMenu addItem:guideItem];
+    
+    [self.statusMenu addItem:[NSMenuItem separatorItem]];
+    
+    // 7. Language Submenu
+    NSMenuItem *langMenuItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_language") action:nil keyEquivalent:@""];
+    NSMenu *langMenu = [[NSMenu alloc] initWithTitle:D3Loc(@"menu_language")];
+    
+    D3LanguageMode curMode = [D3LocalizationManager sharedManager].languageMode;
+    
+    NSMenuItem *autoLang = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_lang_auto") action:@selector(selectLanguageMode:) keyEquivalent:@""];
+    autoLang.target = self;
+    autoLang.tag = D3LanguageModeAuto;
+    autoLang.state = (curMode == D3LanguageModeAuto) ? NSControlStateValueOn : NSControlStateValueOff;
+    [langMenu addItem:autoLang];
+    
+    NSMenuItem *koLang = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_lang_ko") action:@selector(selectLanguageMode:) keyEquivalent:@""];
+    koLang.target = self;
+    koLang.tag = D3LanguageModeKorean;
+    koLang.state = (curMode == D3LanguageModeKorean) ? NSControlStateValueOn : NSControlStateValueOff;
+    [langMenu addItem:koLang];
+    
+    NSMenuItem *enLang = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_lang_en") action:@selector(selectLanguageMode:) keyEquivalent:@""];
+    enLang.target = self;
+    enLang.tag = D3LanguageModeEnglish;
+    enLang.state = (curMode == D3LanguageModeEnglish) ? NSControlStateValueOn : NSControlStateValueOff;
+    [langMenu addItem:enLang];
+    
+    langMenuItem.submenu = langMenu;
+    [self.statusMenu addItem:langMenuItem];
+    
+    [self.statusMenu addItem:[NSMenuItem separatorItem]];
+    
+    // 8. Quit
+    NSMenuItem *quitItem = [[NSMenuItem alloc] initWithTitle:D3Loc(@"menu_quit") action:@selector(terminate:) keyEquivalent:@"q"];
+    [self.statusMenu addItem:quitItem];
+    
+    if (self.statusBar) {
+        self.statusBar.menu = self.statusMenu;
+    }
+}
 
 - (void)setupStatusBarItem {
     if (self.statusBar == nil) {
@@ -47,13 +134,8 @@
         self.statusBar.title = @" DM";
     }
     
-    self.statusBar.menu = self.statusMenu;
+    [self updateStatusMenu];
     self.statusBar.highlightMode = YES;
-    
-    // app name, version
-    NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
-    NSString *aboutString = [NSString stringWithFormat:@"%@ %@", [info objectForKey:@"CFBundleDisplayName"] ?: @"DM_Helper", [info objectForKey:@"CFBundleShortVersionString"] ?: @"1.5"];
-    self.aboutMenuItem.title = aboutString;
 }
 
 - (void)awakeFromNib {
@@ -129,6 +211,33 @@
     [NSApp activateIgnoringOtherApps:YES];
 }
 
+- (IBAction)toggleHelper:(id)sender {
+    [[D3HelperEngine sharedEngine] toggle];
+}
+
+- (IBAction)triggerOpener:(id)sender {
+    [[D3HelperEngine sharedEngine] triggerOpener];
+}
+
+- (IBAction)openPresetShareWindow:(id)sender {
+    if (self.windowController == nil) {
+        self.windowController = [[MainWindowController alloc] initWithWindowNibName:@"MainWindow"];
+    }
+    [self.windowController showPresetShareWindow:sender];
+}
+
+- (IBAction)showHelp:(id)sender {
+    if (self.windowController == nil) {
+        self.windowController = [[MainWindowController alloc] initWithWindowNibName:@"MainWindow"];
+    }
+    [self.windowController showHelpWindow:sender];
+}
+
+- (void)selectLanguageMode:(NSMenuItem *)sender {
+    [D3LocalizationManager sharedManager].languageMode = (D3LanguageMode)sender.tag;
+    [self updateStatusMenu];
+}
+
 #pragma mark Notification Observer
 
 - (void)addNotificationObserver {
@@ -156,6 +265,27 @@
         [[D3EventTapService sharedService] stopEventTap];
         [[D3HelperEngine sharedEngine] stop];
     }];
+    
+    [[NSNotificationCenter defaultCenter] addObserverForName:kD3LanguageChangedNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * note) {
+        [self updateStatusMenu];
+    }];
+    
+    [[NSNotificationCenter defaultCenter] addObserverForName:kD3EngineStateChangedNotification object:nil queue:[NSOperationQueue mainQueue] usingBlock:^(NSNotification * note) {
+        BOOL isRunning = [[note.userInfo objectForKey:@"isRunning"] boolValue];
+        [self handleEngineStateChanged:isRunning];
+    }];
+}
+
+- (void)handleEngineStateChanged:(BOOL)isRunning {
+    NSLog(@"Engine state changed: %@", isRunning ? @"RUNNING" : @"STOPPED");
+    [self updateStatusMenu];
+    if (self.keyConfig.soundFeedbackEnabled) {
+        if (isRunning) {
+            [[NSSound soundNamed:@"Tink"] play];
+        } else {
+            [[NSSound soundNamed:@"Pop"] play];
+        }
+    }
 }
 
 - (void)waitForAccessibility {
@@ -180,22 +310,11 @@
 #pragma mark D3HelperEngineDelegate
 
 - (void)helperEngineStateChanged:(BOOL)isRunning {
-    NSLog(@"Engine state changed: %@", isRunning ? @"RUNNING" : @"STOPPED");
-    if (self.keyConfig.soundFeedbackEnabled) {
-        if (isRunning) {
-            [[NSSound soundNamed:@"Tink"] play];
-        } else {
-            [[NSSound soundNamed:@"Pop"] play];
-        }
-    }
+    [self handleEngineStateChanged:isRunning];
 }
 
 - (void)helperEnginePresetChangeRequested:(NSInteger)presetIndex {
     [self.windowController changePreset:presetIndex];
-}
-
-- (IBAction)showHelp:(id)sender {
-    [self.windowController showHelpWindow:sender];
 }
 
 @end

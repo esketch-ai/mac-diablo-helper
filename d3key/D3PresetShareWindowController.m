@@ -8,6 +8,7 @@
 
 #import "D3PresetShareWindowController.h"
 #import "D3GoogleSheetService.h"
+#import "D3LocalizationManager.h"
 #import <objc/runtime.h>
 
 @interface D3PresetShareWindowController ()
@@ -79,11 +80,12 @@
                                                            NSWindowStyleMaskResizable)
                                                   backing:NSBackingStoreBuffered
                                                     defer:NO];
-    win.title = @"DM_Helper - 🌐 구글 시트 프리셋 공유 센터 (Google Sheets Hub)";
+    win.title = D3Loc(@"sheet_win_title");
     win.minSize = NSMakeSize(880, 580);
     self.window = win;
     
     NSView *root = win.contentView;
+    BOOL isKorean = [D3LocalizationManager sharedManager].isKorean;
     
     // -------------------------------------------------------------
     // 1. 헤더: 아이콘, 타이틀, 우측 버튼
@@ -92,15 +94,15 @@
     iconView.image = [NSImage imageNamed:NSImageNameApplicationIcon];
     [root addSubview:iconView];
     
-    NSTextField *titleLabel = [self labelWithText:@"🌐 구글 시트 프리셋 공유 센터" frame:NSMakeRect(70, 640, 400, 22) bold:YES fontSize:16];
+    NSTextField *titleLabel = [self labelWithText:D3Loc(@"sheet_header_title") frame:NSMakeRect(70, 640, 400, 22) bold:YES fontSize:16];
     [root addSubview:titleLabel];
     
-    NSTextField *subLabel = [self labelWithText:@"유저별 · 시즌별 · 직업/빌드별 공인 및 유저 커뮤니티 세팅을 원클릭으로 공유하고 가져오기" frame:NSMakeRect(70, 622, 530, 18) bold:NO fontSize:11];
+    NSTextField *subLabel = [self labelWithText:D3Loc(@"sheet_header_sub") frame:NSMakeRect(70, 622, 600, 18) bold:NO fontSize:11];
     subLabel.textColor = [NSColor secondaryLabelColor];
     [root addSubview:subLabel];
     
     NSButton *openWebBtn = [[NSButton alloc] initWithFrame:NSMakeRect(720, 628, 115, 28)];
-    openWebBtn.title = @"🌐 시트 웹 열기";
+    openWebBtn.title = D3Loc(@"btn_open_web");
     openWebBtn.bezelStyle = NSBezelStyleRounded;
     openWebBtn.target = self;
     openWebBtn.action = @selector(openSheetInBrowserAction:);
@@ -108,7 +110,7 @@
     [root addSubview:openWebBtn];
     
     NSButton *settingsBtn = [[NSButton alloc] initWithFrame:NSMakeRect(840, 628, 100, 28)];
-    settingsBtn.title = @"⚙️ 시트 설정";
+    settingsBtn.title = D3Loc(@"btn_sheet_settings");
     settingsBtn.bezelStyle = NSBezelStyleRounded;
     settingsBtn.target = self;
     settingsBtn.action = @selector(openSettingsSheetAction:);
@@ -124,25 +126,29 @@
     [root addSubview:filterBox];
     
     _seasonPopUp = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(10, 10, 150, 26) pullsDown:NO];
-    [_seasonPopUp addItemsWithTitles:@[@"시즌: 전체", @"시즌 6", @"시즌 7", @"시즌 8", @"영원", @"디아블로 3"]];
+    NSArray *seasons = isKorean ? @[@"시즌: 전체", @"시즌 6", @"시즌 7", @"시즌 8", @"영원", @"디아블로 3"] :
+                                  @[@"Season: All", @"Season 6", @"Season 7", @"Season 8", @"Eternal", @"Diablo 3"];
+    [_seasonPopUp addItemsWithTitles:seasons];
     _seasonPopUp.target = self;
     _seasonPopUp.action = @selector(filterChanged:);
     [filterBox.contentView addSubview:_seasonPopUp];
     
     _classPopUp = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(165, 10, 140, 26) pullsDown:NO];
-    [_classPopUp addItemsWithTitles:@[@"직업: 전체", @"악마술사", @"원소술사", @"야만용사", @"도적", @"강령술사", @"혼령사", @"드루이드", @"디아3 전직업"]];
+    NSArray *classes = isKorean ? @[@"직업: 전체", @"악마술사", @"원소술사", @"야만용사", @"도적", @"강령술사", @"혼령사", @"드루이드", @"디아3 전직업"] :
+                                  @[@"Class: All", @"Warlock", @"Sorcerer", @"Barbarian", @"Rogue", @"Necromancer", @"Spiritborn", @"Druid", @"D3 All"];
+    [_classPopUp addItemsWithTitles:classes];
     _classPopUp.target = self;
     _classPopUp.action = @selector(filterChanged:);
     [filterBox.contentView addSubview:_classPopUp];
     
     _searchField = [[NSSearchField alloc] initWithFrame:NSMakeRect(315, 12, 470, 24)];
-    _searchField.placeholderString = @"작성자, 빌드명, 설명 키워드 검색...";
+    _searchField.placeholderString = D3Loc(@"search_placeholder");
     _searchField.delegate = self;
     _searchField.autoresizingMask = NSViewWidthSizable;
     [filterBox.contentView addSubview:_searchField];
     
     NSButton *refreshBtn = [[NSButton alloc] initWithFrame:NSMakeRect(795, 10, 110, 26)];
-    refreshBtn.title = @"🔄 새로고침";
+    refreshBtn.title = D3Loc(@"btn_refresh");
     refreshBtn.bezelStyle = NSBezelStyleRounded;
     refreshBtn.target = self;
     refreshBtn.action = @selector(refreshRemotePresets:);
@@ -167,12 +173,12 @@
     _tableView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     
     NSArray *colInfo = @[
-        @{@"id": @"season", @"title": @"시즌", @"width": @95},
-        @{@"id": @"class", @"title": @"직업", @"width": @85},
-        @{@"id": @"build", @"title": @"빌드명", @"width": @230},
-        @{@"id": @"author", @"title": @"작성자(유저)", @"width": @110},
-        @{@"id": @"date", @"title": @"등록일", @"width": @90},
-        @{@"id": @"desc", @"title": @"상세 설명 / 운용 요약", @"width": @290}
+        @{@"id": @"season", @"title": D3Loc(@"col_season"), @"width": @95},
+        @{@"id": @"class", @"title": D3Loc(@"col_class"), @"width": @85},
+        @{@"id": @"build", @"title": D3Loc(@"col_build"), @"width": @230},
+        @{@"id": @"author", @"title": D3Loc(@"col_author"), @"width": @110},
+        @{@"id": @"date", @"title": D3LocDef(@"col_date", @"등록일"), @"width": @90},
+        @{@"id": @"desc", @"title": D3LocDef(@"col_desc", @"상세 설명 / 운용 요약"), @"width": @290}
     ];
     
     for (NSDictionary *info in colInfo) {
@@ -189,7 +195,7 @@
     // 4. 하단 상세 정보 카드 (Detail Preview)
     // -------------------------------------------------------------
     NSBox *previewBox = [[NSBox alloc] initWithFrame:NSMakeRect(20, 58, 920, 165)];
-    previewBox.title = @"선택된 프리셋 구성 미리보기 & 빌드 상세";
+    previewBox.title = isKorean ? @"선택된 프리셋 구성 미리보기 & 빌드 상세" : @"Selected Preset Preview & Build Details";
     previewBox.autoresizingMask = NSViewWidthSizable | NSViewMaxYMargin;
     [root addSubview:previewBox];
     
@@ -210,27 +216,29 @@
     // -------------------------------------------------------------
     // 5. 하단 액션 버튼 바
     // -------------------------------------------------------------
-    NSTextField *slotLabel = [self labelWithText:@"가져올 프로필 슬롯:" frame:NSMakeRect(20, 19, 115, 20) bold:YES fontSize:12];
+    NSTextField *slotLabel = [self labelWithText:D3Loc(@"label_target_slot") frame:NSMakeRect(20, 19, 140, 20) bold:YES fontSize:12];
     [root addSubview:slotLabel];
     
-    _targetSlotPopUp = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(138, 16, 90, 26) pullsDown:NO];
-    [_targetSlotPopUp addItemsWithTitles:@[@"슬롯 1", @"슬롯 2", @"슬롯 3", @"슬롯 4", @"슬롯 5"]];
+    _targetSlotPopUp = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(165, 16, 95, 26) pullsDown:NO];
+    for (NSInteger s = 1; s <= 5; s++) {
+        [_targetSlotPopUp addItemWithTitle:[NSString stringWithFormat:D3Loc(@"slot_format"), (long)s]];
+    }
     [root addSubview:_targetSlotPopUp];
     
-    NSButton *importBtn = [[NSButton alloc] initWithFrame:NSMakeRect(235, 15, 185, 28)];
-    importBtn.title = @"📥 내 헬퍼로 가져오기 (적용)";
+    NSButton *importBtn = [[NSButton alloc] initWithFrame:NSMakeRect(268, 15, 195, 28)];
+    importBtn.title = D3Loc(@"btn_import_helper");
     importBtn.bezelStyle = NSBezelStyleRounded;
     importBtn.font = [NSFont boldSystemFontOfSize:12];
     importBtn.target = self;
     importBtn.action = @selector(importSelectedPresetAction:);
     [root addSubview:importBtn];
     
-    _statusLabel = [self labelWithText:@"" frame:NSMakeRect(425, 20, 200, 20) bold:NO fontSize:11];
+    _statusLabel = [self labelWithText:@"" frame:NSMakeRect(470, 20, 160, 20) bold:NO fontSize:11];
     _statusLabel.textColor = [NSColor secondaryLabelColor];
     [root addSubview:_statusLabel];
     
     NSButton *shareCurrentBtn = [[NSButton alloc] initWithFrame:NSMakeRect(635, 15, 175, 28)];
-    shareCurrentBtn.title = @"📤 현재 내 설정 시트에 공유...";
+    shareCurrentBtn.title = D3Loc(@"btn_share_preset");
     shareCurrentBtn.bezelStyle = NSBezelStyleRounded;
     shareCurrentBtn.target = self;
     shareCurrentBtn.action = @selector(openShareModalAction:);
@@ -238,7 +246,8 @@
     [root addSubview:shareCurrentBtn];
     
     NSButton *copyRowBtn = [[NSButton alloc] initWithFrame:NSMakeRect(815, 15, 125, 28)];
-    copyRowBtn.title = @"📋 시트 행 복사";
+    copyRowBtn.title = D3Loc(@"btn_copy_tsv");
+    copyRowBtn.toolTip = D3Loc(@"btn_copy_tsv_tooltip");
     copyRowBtn.bezelStyle = NSBezelStyleRounded;
     copyRowBtn.target = self;
     copyRowBtn.action = @selector(copySelectedRowAction:);

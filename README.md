@@ -1,10 +1,12 @@
 <p align="center">
   <img src="dm_helper_logo.png" width="130" height="130" alt="DM_Helper Logo" style="border-radius: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"/><br/>
   <h1 align="center">DM_Helper (Diablo Mac Helper)</h1>
-  <p align="center"><b>macOS (Apple Silicon & Intel) 네이티브 초정밀 디아블로 4 & 3 게이밍 헬퍼</b></p>
+  <p align="center"><b>macOS (Apple Silicon & Intel) 네이티브 초정밀 디아블로 4 & 3 게이밍 헬퍼</b><br/>
+  <i>Native Precision Gaming Helper for Diablo 4 & 3 on macOS (Korean & English Dual Support)</i></p>
   <p align="center">
     <img src="https://img.shields.io/badge/platform-macOS%2010.13+-brightgreen.svg" alt="Platform"/>
     <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20|%20Intel-blue.svg" alt="Architecture"/>
+    <img src="https://img.shields.io/badge/languages-한국어%20|%20English-blueviolet.svg" alt="Languages"/>
     <img src="https://img.shields.io/badge/version-1.5-orange.svg" alt="Version"/>
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"/>
   </p>
@@ -91,8 +93,16 @@
 - **특수키 (최대 3개)**: 누르고 있는 동안 체크된 스킬 일시정지 & 쿨타임 대기 제어
 - **퀘스트키**: NPC 대화 및 상호작용 시 모든 스킬 전면 일시정지
 - **시간조절키**: 도관/쿨감 신단 획득 시 1회 눌러 전체 주기 가속
-- **인게임 연동 종료키 (8개)**: 가방(I), 스킬창(S), 지도(M), 포탈(T), 채팅(Enter) 오픈 시 헬퍼 즉시 자동 정지
 - **방해금지 데드존**: 하단 스킬바, 자원 구슬 오클릭 자동 방지
+
+### 🌐 한국어 & 영어 완벽 다국어 지원 (Bilingual Support: KO / EN)
+- **실시간 원클릭 언어 전환**: 상단 제어 바의 언어 팝업(`🌐 KO` / `🌐 EN` / `🌐 Auto`) 또는 macOS 메뉴바(Status Item)에서 실시간 원클릭 전환
+- **편집 상태 100% 무손실 보존**: 언어를 전환해도 입력 중이던 키 매핑, 딜레이(ms), 메모, 체크박스 상태가 즉시 그대로 보존
+- **전체 화면 완벽 번역**:
+  - 메인 창 (상단 제어 바, 3개 탭의 모든 박스, 라벨, 툴팁, 가이드 노트)
+  - 인앱 설명서 가이드 창 (5개 카테고리 전체 한/영 듀얼 HTML 가이드)
+  - 구글 시트 프리셋 공유 센터 및 직업 프리셋명 영문화 (`Warlock`, `Sorcerer`, `Barbarian`, `Rogue`, `Necromancer`, `Spiritborn`)
+- **시스템 언어 자동 감지**: 영문 macOS 환경에서는 영어로 자동 시작, 한글 환경에서는 한국어로 자동 시작
 
 ---
 
@@ -137,9 +147,13 @@
 
 ## 📝 변경사항
 
-### 1.5 (DM_Helper 리브랜딩 & 클라우드 공유 & 극강 안정성 개편)
+### 1.5 (DM_Helper 리브랜딩 & 클라우드 공유 & 다국어 지원 & 극강 안정성 개편)
 - **브랜드 네이밍 전면 통일**: 프로젝트명 및 UI 전반을 `DM_Helper (Diablo Mac Helper)`로 정식 리브랜딩
 - **신규 로고 및 앱 아이콘 적용**: 레티나 1024x1024 고해상도 앱 아이콘 및 상태 표시줄 아이콘 탑재
+- **한국어 / English 완벽 다국어 지원 (Bilingual Support)**:
+  - 시스템 언어(macOS 기본값)에 따른 자동 언어 선택 및 상단 바(`🌐 KO` / `🌐 EN` / `🌐 Auto`), 메뉴바 원클릭 실시간 전환
+  - 메인 창, 3개 탭, 인앱 가이드북(HTML), 구글 시트 프리셋 공유 창, 직업 프리셋명 전면 듀얼 번역
+  - 언어 전환 시 편집 중이던 프로필 데이터 100% 실시간 무손실 보존
 - **메인 화면에 준비 키(오프너) 단축키 및 사용 체크박스 즉시 설정 지원**:
   - 메인 화면과 탭 2의 오프너 설정 간 실시간 양방향 동기화
   - 사용 체크박스 비선택 불가(상호 잠금) 버그 원천 해결
@@ -153,9 +167,9 @@
   - 마우스 좌클릭 유입 시 포커스 해제 및 키 롤백 버그 수정
   - 사용자가 비워둔 키와 커스텀 키 설정 100% 영구 보존
 - **인앱 도움말 가이드 창 탑재 (`Cmd + ?`)**:
-  - 라이트 모드 / 다크 모드 완벽 대응하는 미려한 내장 매뉴얼 뷰어
-- **17개 단위 테스트 전체 100% 통과**:
-  - 단일반복 키 보존 검증, 오프너 및 체크박스 동작 검증 등 회귀 방지 테스트 구축
+  - 라이트 모드 / 다크 모드 완벽 대응하는 미려한 내장 매뉴얼 뷰어 (한/영 듀얼 탭 지원)
+- **18개 단위 테스트 전체 100% 통과**:
+  - 다국어 모드 전환 및 프리셋 번역 검증, 단일반복 키 보존 검증, 오프너 및 체크박스 동작 검증 등 회귀 방지 테스트 구축
 
 ### 1.4 (DHelper 에디션 전면 개편)
 - DHelper 기준 2단 그리드 UI 전면 재설계 (창 크기 880x680 최적화)

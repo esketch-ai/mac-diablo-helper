@@ -12,6 +12,7 @@
 #import "../d3key/D3DeadzoneFilter.h"
 #import "../d3key/D3PresetItem.h"
 #import "../d3key/D3GoogleSheetService.h"
+#import "../d3key/D3LocalizationManager.h"
 #import <Carbon/Carbon.h>
 
 @interface d3keyTests : XCTestCase
@@ -556,6 +557,58 @@
     config.openerTriggerKey = mouseLeft;
     [config sanitize];
     XCTAssertTrue([config.openerTriggerKey isEmpty]);
+}
+
+- (void)testLocalizationManager {
+    D3LocalizationManager *manager = [D3LocalizationManager sharedManager];
+    D3LanguageMode originalMode = manager.languageMode;
+    
+    // 1. Notification expectation
+    __block BOOL notified = NO;
+    id observer = [[NSNotificationCenter defaultCenter] addObserverForName:kD3LanguageChangedNotification
+                                                                    object:nil
+                                                                     queue:[NSOperationQueue mainQueue]
+                                                                usingBlock:^(NSNotification * _Nonnull note) {
+        notified = YES;
+    }];
+    
+    // 2. Korean mode testing
+    manager.languageMode = D3LanguageModeKorean;
+    XCTAssertTrue(manager.isKorean);
+    XCTAssertEqualObjects([manager currentLanguageCode], @"ko");
+    XCTAssertEqualObjects(D3Loc(@"profile_label"), @"프로필");
+    XCTAssertEqualObjects(D3Loc(@"tab_helper"), @"기본 헬퍼");
+    XCTAssertEqualObjects(D3Loc(@"tab_rotation"), @"로테이션 & 준비 시퀀스");
+    XCTAssertEqualObjects(D3Loc(@"tab_features"), @"단일반복 & 편의기능");
+    XCTAssertEqualObjects(D3Loc(@"menu_start"), @"동작 시작");
+    XCTAssertEqualObjects([manager localizedPresetName:@"원소술사 (번개창 & 탈 라샤)"], @"원소술사 (번개창 & 탈 라샤)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"악마술사 (타오르는 비명 & 탈태 오프너)"], @"악마술사 (타오르는 비명 & 탈태 오프너)");
+    
+    // 3. English mode testing
+    notified = NO;
+    manager.languageMode = D3LanguageModeEnglish;
+    XCTAssertFalse(manager.isKorean);
+    XCTAssertEqualObjects([manager currentLanguageCode], @"en");
+    XCTAssertTrue(notified);
+    XCTAssertEqualObjects(D3Loc(@"profile_label"), @"Profile");
+    XCTAssertEqualObjects(D3Loc(@"tab_helper"), @"Basic Helper");
+    XCTAssertEqualObjects(D3Loc(@"tab_rotation"), @"Rotation & Opener");
+    XCTAssertEqualObjects(D3Loc(@"tab_features"), @"Single Repeat & Utility");
+    XCTAssertEqualObjects(D3Loc(@"menu_start"), @"Start Helper");
+    XCTAssertEqualObjects([manager localizedPresetName:@"원소술사 (번개창 & 탈 라샤)"], @"Sorcerer (Lightning Spear / Tal Rasha)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"악마술사 (타오르는 비명 & 탈태 오프너)"], @"Warlock (Fiery Scream)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"야만용사 (소용돌이 채널링)"], @"Barbarian (Whirlwind Channeling)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"도적 (3 콤보 포인트 연계)"], @"Rogue (3 Combo Points)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"강령술사 (뼈창 & 시체폭발)"], @"Necromancer (Bone Spear & Corpse Expl.)");
+    XCTAssertEqualObjects([manager localizedPresetName:@"혼령사 (위상 연계 & 제압)"], @"Spiritborn (Aspect & Overpower)");
+    
+    // 4. Fallback testing
+    XCTAssertEqualObjects([manager localizedStringForKey:@"non_existing_key" default:@"FallbackValue"], @"FallbackValue");
+    XCTAssertEqualObjects([manager localizedStringForKey:@"non_existing_key"], @"non_existing_key");
+    
+    // Cleanup
+    [[NSNotificationCenter defaultCenter] removeObserver:observer];
+    manager.languageMode = originalMode;
 }
 
 @end
