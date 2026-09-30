@@ -117,7 +117,7 @@
 
 ## 📦 다운로드
 
-- [1.5 최신 버전 다운로드 (dm_helper-1.5.zip)](dm_helper-1.5.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
+- [1.5 최신 버전 다운로드 (dm_helper-1.5.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
 - [1.3 다운로드](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
 - [1.2 다운로드](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) (원본 저장소)
 
