@@ -1,6 +1,7 @@
 <p align="center">
   <img src="dm_helper_logo.png" width="110" height="110" alt="DM_Helper Logo" style="border-radius: 22px;"/><br/>
   <h1 align="center">📖 DM_Helper 완벽 사용자 매뉴얼 & 가이드</h1>
+  <p align="center"><b><a href="README.md">🇰🇷 한국어 README</a></b> | <b><a href="README_EN.md">🇺🇸 English README</a></b></p>
 </p>
 
 > **DM_Helper (Diablo Mac Helper)**는 macOS(Apple Silicon M1~M4 및 Intel) 환경에서 디아블로 3와 디아블로 4를 가장 정밀하고 쾌적하게 플레이할 수 있도록 제작된 **초정밀 네이티브 게이밍 헬퍼**입니다.  
@@ -265,3 +266,8 @@ DM_Helper는 글로벌 디아블로 유저를 위해 **한국어(Korean)**와 **
   - 창 제목, 검색창, 필터(시즌/직업), 슬롯 선택, 가져오기/공유 버튼 전체 현지화.
 * **직업 프리셋 영문화 매핑**:
   - 영문 모드 선택 시 프리셋명이 `Warlock (Fiery Scream)`, `Sorcerer (Lightning Spear / Tal Rasha)`, `Barbarian (Whirlwind Channeling)`, `Rogue (3 Combo Points)`, `Necromancer (Bone Spear & Corpse Expl.)`, `Spiritborn (Aspect & Overpower)` 등으로 자동 표기됩니다.
+* **영문 UI 스크린샷 및 영문 매뉴얼**:
+  - [English User Manual (README_EN.md)](README_EN.md)
+  - 탭 1 영문 스크린샷: [03_screen_tab1_en.png](03_screen_tab1_en.png)
+  - 탭 2 영문 스크린샷: [03_screen_tab2_en.png](03_screen_tab2_en.png)
+  - 탭 3 영문 스크린샷: [03_screen_tab3_en.png](03_screen_tab3_en.png)

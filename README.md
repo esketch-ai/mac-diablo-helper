@@ -4,6 +4,9 @@
   <p align="center"><b>macOS (Apple Silicon & Intel) 네이티브 초정밀 디아블로 4 & 3 게이밍 헬퍼</b><br/>
   <i>Native Precision Gaming Helper for Diablo 4 & 3 on macOS (Korean & English Dual Support)</i></p>
   <p align="center">
+    <b><a href="README.md">🇰🇷 한국어 (Korean)</a></b> | <b><a href="README_EN.md">🇺🇸 English</a></b>
+  </p>
+  <p align="center">
     <img src="https://img.shields.io/badge/platform-macOS%2010.13+-brightgreen.svg" alt="Platform"/>
     <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20|%20Intel-blue.svg" alt="Architecture"/>
     <img src="https://img.shields.io/badge/languages-한국어%20|%20English-blueviolet.svg" alt="Languages"/>
@@ -58,7 +61,8 @@
 
 ### 탭 1: 기본 헬퍼
 <p align="center">
-  <img src="03_screen_tab1.png?raw=true" alt="탭 1: 기본 헬퍼" width="850"/>
+  <img src="03_screen_tab1.png?raw=true" alt="탭 1: 기본 헬퍼" width="850"/><br/>
+  <sub><i>(English UI: <a href="03_screen_tab1_en.png">03_screen_tab1_en.png</a>)</i></sub>
 </p>
 
 - **시작/종료키 & 준비 키(오프너)**: 원클릭 토글(`[`) 또는 분리 가능하며, 메인 화면에서 바로 오프너 단축키와 사용 여부를 원터치 설정 가능
@@ -74,7 +78,8 @@
 
 ### 탭 2: 로테이션 & 준비 시퀀스
 <p align="center">
-  <img src="03_screen_tab2.png?raw=true" alt="탭 2: 로테이션 & 준비 시퀀스" width="850"/>
+  <img src="03_screen_tab2.png?raw=true" alt="탭 2: 로테이션 & 준비 시퀀스" width="850"/><br/>
+  <sub><i>(English UI: <a href="03_screen_tab2_en.png">03_screen_tab2_en.png</a>)</i></sub>
 </p>
 
 - **초기 준비 시퀀스 (Opener & Ramp-up)**:
@@ -84,7 +89,8 @@
 
 ### 탭 3: 단일반복 & 편의기능
 <p align="center">
-  <img src="03_screen_tab3.png?raw=true" alt="탭 3: 단일반복 & 편의기능" width="850"/>
+  <img src="03_screen_tab3.png?raw=true" alt="탭 3: 단일반복 & 편의기능" width="850"/><br/>
+  <sub><i>(English UI: <a href="03_screen_tab3_en.png">03_screen_tab3_en.png</a>)</i></sub>
 </p>
 
 - **단일반복키 (독립 루프)**:
