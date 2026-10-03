@@ -1,19 +1,38 @@
 <p align="center">
   <img src="dm_helper_logo.png" width="130" height="130" alt="DM_Helper Logo" style="border-radius: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"/><br/>
-  <h1 align="center">DM_Helper (Diablo Mac Helper)</h1>
-  <p align="center"><b>macOS (Apple Silicon & Intel) 네이티브 초정밀 디아블로 4 & 3 게이밍 헬퍼</b><br/>
-  <i>Native Precision Gaming Helper for Diablo 4 & 3 on macOS (Korean & English Dual Support)</i></p>
+  <h1 align="center">DM_Helper (Diablo Mac &amp; Windows Helper)</h1>
+  <p align="center"><b>macOS &amp; Windows 11 네이티브 초정밀 디아블로 4 &amp; 3 게이밍 헬퍼</b><br/>
+  <i>Native Precision Gaming Helper for Diablo 4 &amp; 3 on macOS and Windows 11 (Korean &amp; English Dual Support)</i></p>
   <p align="center">
     <b><a href="README.md">🇰🇷 한국어 (Korean)</a></b> | <b><a href="README_EN.md">🇺🇸 English</a></b>
   </p>
   <p align="center">
-    <img src="https://img.shields.io/badge/platform-macOS%2010.13+-brightgreen.svg" alt="Platform"/>
-    <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20|%20Intel-blue.svg" alt="Architecture"/>
+    <img src="https://img.shields.io/badge/platform-macOS%2010.13+%20|%20Windows%2011-brightgreen.svg" alt="Platform"/>
+    <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel%20%7C%20x64-blue.svg" alt="Architecture"/>
     <img src="https://img.shields.io/badge/languages-한국어%20|%20English-blueviolet.svg" alt="Languages"/>
     <img src="https://img.shields.io/badge/version-1.5-orange.svg" alt="Version"/>
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"/>
   </p>
 </p>
+
+---
+
+> ## 🪟 Windows 11 버전
+>
+> **Windows 11 네이티브 버전이 준비되었습니다.** 같은 저장소, 같은 기능입니다.
+>
+> | | |
+> |---|---|
+> | 상태 | **검증 대기** — 빌드 완료, 실기 테스트 진행 중 |
+> | 관리자 권한 | **필수** (입력 주입이 게임 프로세스보다 낮은 권한이면 차단됨) |
+> | 기술 스택 | C# / WPF / .NET 8 |
+> | 상세 정보 | [win/README.md](win/README.md) |
+>
+> ```bash
+> cd win && dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
+> ```
+>
+> 실기 동작을 확인하기 전에는 정식 릴리즈를 올리지 않습니다. 아래 [다운로드](#-다운로드) 참고.
 
 ---
 
@@ -145,9 +164,42 @@
 
 ## 📦 다운로드
 
-- [1.5 최신 버전 다운로드 (dm_helper-1.5.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
-- [1.3 다운로드](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
-- [1.2 다운로드](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) (원본 저장소)
+릴리즈는 태그 하나로 두 OS 빌드를 함께 제공합니다. 파일명에 OS가 붙어 있습니다.
+
+### macOS
+
+- [**1.5 최신 버전**](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
+- [1.3](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
+- [1.2](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) (원본 저장소)
+
+설치 후 **시스템 설정 > 개인정보 보호 및 보안 > 손쉬운 사용**에서 앱을 허용해야 합니다.
+자세한 내용은 [MANUAL.md](MANUAL.md)를 보세요.
+
+### Windows 11
+
+**정식 릴리즈는 아직 없습니다.** 빌드와 단위 테스트(158개)는 통과했지만,
+입력이 실제 디아블로4에 전달되는지는 Windows 실기에서의 검증이 남아 있습니다.
+검증 없이 배포하면 아무 일도 일어나지 않는 매크로를 드리게 되므로, 확인 후 릴리즈합니다.
+
+직접 빌드하려면 [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)가 필요합니다:
+
+```bash
+cd win
+dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
+```
+
+산출물: `src/DM_Helper.Wpf/bin/Release/net8.0-windows/win-x64/publish/DM_Helper.exe`
+
+> ⚠️ **반드시 관리자 권한으로 실행하세요.** Windows는 UIPI 정책상 헬퍼가 게임보다 낮은
+> 권한이면 입력 주입을 조용히 버립니다. 제목 표시줄에 `관리자: DM_Helper`가 보여야 합니다.
+
+동작 확인용 검증 도구도 함께 빌드할 수 있습니다:
+
+```bash
+dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
+```
+
+9개 항목을 검사하고 PASS/FAIL을 출력합니다. 상세 내용은 [win/README.md](win/README.md).
 
 ---
 

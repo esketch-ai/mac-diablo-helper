@@ -1,0 +1,112 @@
+name: Release
+
+# Manual only. A release tag means the binaries have been checked against real hardware -
+# see the "before tagging" checklist in the job below. Publishing an unverified Windows
+# build would hand the first user a macro that silently does nothing.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to attach builds to, e.g. v1.6.0"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  windows:
+    name: Windows build
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Resolve tag
+        id: tag
+        shell: pwsh
+        run: |
+          $tag = if ($env:GITHUB_EVENT_NAME -eq 'release') {
+            '${{ github.event.release.tag_name }}'
+          } else {
+            '${{ inputs.tag }}'
+          }
+          if (-not $tag) { throw "could not determine the tag" }
+          "value=$tag" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "building $tag"
+
+      - name: Publish self-contained single file
+        working-directory: win
+        run: dotnet publish src/DM_Helper.Wpf/DM_Helper.Wpf.csproj -c Release -r win-x64 --nologo -o out
+
+      - name: Verify the manifest reached the binary
+        shell: pwsh
+        run: |
+          $exe = "win/out/DM_Helper.exe"
+          if (-not (Test-Path $exe)) { throw "DM_Helper.exe was not produced" }
+
+          $text = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($exe))
+          foreach ($needle in @('requireAdministrator', 'PerMonitorV2')) {
+            if (-not $text.Contains($needle)) {
+              throw "manifest entry '$needle' missing from the published exe"
+            }
+          }
+          Write-Host "manifest verified"
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $tag = '${{ steps.tag.outputs.value }}'
+          $ver = $tag.TrimStart('v')
+          $out = "DM_Helper-$ver-windows-x64.zip"
+
+          # The app self-extracts its native bits, so the .exe is the whole product. The
+          # PDB is shipped too: users reporting a crash can then attach symbols.
+          Compress-Archive -Path win/out/* -DestinationPath $out
+
+          # A checksum file lets users verify the download and makes tampering obvious.
+          $hash = (Get-FileHash $out -Algorithm SHA256).Hash.ToLower()
+          "$hash  $out" | Out-File -FilePath "$out.sha256" -Encoding ascii
+
+          Write-Host "built $out ($([math]::Round((Get-Item $out).Length/1MB,1)) MB)"
+
+      - name: Attach to the release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          files: |
+            DM_Helper-*-windows-x64.zip
+            DM_Helper-*-windows-x64.zip.sha256
+
+      - name: Upload for manual dispatch
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dm-helper-release-windows
+          path: |
+            DM_Helper-*-windows-x64.zip
+            DM_Helper-*-windows-x64.zip.sha256
+
+  macos:
+    name: macOS build
+    runs-on: macos-latest
+    # Gated: the macOS app must be signed and notarized with the real identity before it
+    # is downloadable. This runner does not hold it, so a release build is produced
+    # manually and this job only publishes when explicitly told to.
+    if: github.event_name == 'release' && contains(github.event.release.body || '', 'signed-macos-build-attached')
+    steps:
+      - name: Explain
+        run: |
+          echo "::notice::macOS assets are uploaded manually from a signed build machine."
+          echo "Attach the signed .app zip to the release manually, then delete this note."

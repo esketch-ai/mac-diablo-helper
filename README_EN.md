@@ -1,18 +1,35 @@
 <p align="center">
   <img src="dm_helper_logo.png" width="130" height="130" alt="DM_Helper Logo" style="border-radius: 26px; box-shadow: 0 8px 24px rgba(0,0,0,0.3);"/><br/>
-  <h1 align="center">DM_Helper (Diablo Mac Helper)</h1>
-  <p align="center"><b>Native Precision Gaming Helper for Diablo 4 & 3 on macOS (Apple Silicon & Intel)</b></p>
+  <h1 align="center">DM_Helper (Diablo Mac &amp; Windows Helper)</h1>
+  <p align="center"><b>Native Precision Gaming Helper for Diablo 4 &amp; 3 on macOS &amp; Windows 11</b><br/>
+  <i>Apple Silicon &amp; Intel · Windows x64</i></p>
   <p align="center">
     <b><a href="README.md">🇰🇷 한국어 (Korean)</a></b> | <b><a href="README_EN.md">🇺🇸 English</a></b>
   </p>
   <p align="center">
-    <img src="https://img.shields.io/badge/platform-macOS%2010.13+-brightgreen.svg" alt="Platform"/>
-    <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20|%20Intel-blue.svg" alt="Architecture"/>
+    <img src="https://img.shields.io/badge/platform-macOS%2010.13+%20|%20Windows%2011-brightgreen.svg" alt="Platform"/>
+    <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel%20%7C%20x64-blue.svg" alt="Architecture"/>
     <img src="https://img.shields.io/badge/languages-English%20|%20Korean-blueviolet.svg" alt="Languages"/>
     <img src="https://img.shields.io/badge/version-1.5-orange.svg" alt="Version"/>
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"/>
   </p>
 </p>
+
+---
+
+> ## 🪟 Windows 11
+>
+> **A native Windows 11 build is ready.** Same repository, same feature set.
+>
+> | | |
+> |---|---|
+> | Status | **Awaiting hardware verification** — builds clean, 158 unit tests pass |
+> | Administrator | **Required** — injection is blocked below the game's privilege level |
+> | Stack | C# / WPF / .NET 8 |
+> | Details | [win/README.md](win/README.md) |
+>
+> No official release until it is confirmed working on real hardware. See
+> [Download](#-download).
 
 ---
 
@@ -139,9 +156,43 @@ DM_Helper requires macOS Accessibility permissions to monitor hotkeys and dispat
 
 ## 📦 Download
 
-- **[Download Latest Release v1.5 (dm_helper-1.5.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip)** — macOS 10.13+ (Apple Silicon & Intel Universal)
+A single tag carries builds for both platforms; the OS is named in each filename.
+
+### macOS
+
+- **[Download Latest v1.5 (dm_helper-1.5.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip)** — macOS 10.13+ (Apple Silicon & Intel Universal)
 - [v1.3 Release](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
 - [Original v1.2 Repository](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip)
+
+After installing, grant the app permission under
+**System Settings > Privacy & Security > Accessibility**.
+
+### Windows 11
+
+**No official release yet.** The build succeeds and all 158 unit tests pass, but whether
+input actually reaches Diablo 4 still needs verification on real Windows hardware. Shipping
+it unverified would hand you a macro that silently does nothing, so we are holding.
+
+To build it yourself you need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0):
+
+```bash
+cd win
+dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
+```
+
+Output: `src/DM_Helper.Wpf/bin/Release/net8.0-windows/win-x64/publish/DM_Helper.exe`
+
+> ⚠️ **You must run it as administrator.** Under the Windows UIPI policy, input injection is
+> silently discarded when the helper runs at a lower privilege level than the game. The
+> title bar must read `Administrator: DM_Helper`.
+
+A verification tool can be built alongside it:
+
+```bash
+dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
+```
+
+It checks nine things and reports PASS/FAIL for each. See [win/README.md](win/README.md).
 
 ---
 

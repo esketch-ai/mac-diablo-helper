@@ -58,3 +58,19 @@ obj/
 *.user
 .vs/
 publish/
+
+# Release artifacts
+#
+# Binaries belong on GitHub Releases, not in git history. Committing the 64MB Windows exe
+# would bloat every future clone for no benefit. CI output and locally built packages are
+# ignored for the same reason.
+dm_helper-*.zip
+dm_helper-*.zip.sha256
+DM_Helper-*-macos.zip
+DM_Helper-*-macos.zip.sha256
+DM_Helper-*-windows-x64.zip
+DM_Helper-*-windows-x64.zip.sha256
+out/
+
+# macOS
+.DS_Store
