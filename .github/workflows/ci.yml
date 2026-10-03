@@ -130,11 +130,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build the Objective-C target
-        # -scheme "DM_Helper" rather than -target d3key: xcodebuild refuses -derivedDataPath
-        # without one of -scheme/-testProductsPath/-xctestrun, and without an explicit
-        # output path the .app lands somewhere version dependent and unsearchable.
-        # The scheme name comes from the product name (DM_Helper in the pbxproj) because the
-        # repository has no shared .xcscheme; xcodebuild autocreates one from the target.
+        # The repository ships a shared scheme at
+        # D3 Skill Assistant.xcodeproj/xcshareddata/xcschemes/DM_Helper.xcscheme.
+        # xcodebuild does not reliably autocreate a scheme for -scheme on a bare .xcodeproj,
+        # and it refuses -derivedDataPath without -scheme, which is what makes the output
+        # location predictable.
         #
         # No signing: a CI-signed build would not be distributable anyway, and it would
         # produce an artifact that differs from the released one in a confusing way.
