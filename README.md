@@ -17,26 +17,20 @@
 
 ---
 
-> ## 🪟 Windows 11 버전
+> ## 🪟 Windows 11
 >
-> **Windows 11 네이티브 버전이 준비되었습니다.** 같은 저장소, 같은 기능입니다.
+> **[⬇️ 베타 다운로드](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.6.0-beta.1/DM_Helper-1.6.0-beta.1-windows-x64.zip)**
+> 압축을 풀고 `DM_Helper.exe`를 **관리자 권한으로 실행**하세요. 설치 프로그램 불필요.
+>
+> **프리릴리즈입니다.** 빌드와 테스트는 통과했지만 실제 디아블로4 동작은 미확인 상태입니다.
+> 먼저 같은 폴더의 `DM_Helper_Spike.exe`로 검증해 보시기를 권장합니다.
 >
 > | | |
 > |---|---|
-> | 상태 | **검증 대기** — 빌드 완료, 실기 테스트 진행 중 |
-> | 관리자 권한 | **필수** (입력 주입이 게임 프로세스보다 낮은 권한이면 차단됨) |
-> | 기술 스택 | C# / WPF / .NET 8 |
+> | 상태 | 프리릴리즈 — 실기 검증 대기 |
+> | 관리자 권한 | **필수** — 권한이 낮으면 입력 주입이 차단됨 |
+> | 요구사항 | Windows 11 x64, 앱은 추가 설치 불필요 |
 > | 상세 정보 | [win/README.md](win/README.md) |
->
-> ```bash
-> cd win && dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
-> ```
->
-> 실기 동작을 확인하기 전에는 정식 릴리즈를 올리지 않습니다. 아래 [다운로드](#-다운로드) 참고.
->
-> **빌드된 exe는 매 커밋마다 CI 아티팩트로 올라갑니다.**
-> GitHub Actions → 가장 최근 "CI" 실행 → Artifacts → `dm-helper-windows-x64`,
-> `dm-helper-spike-windows-x64` 를 받으면 됩니다. 별도 빌드 없이 exe만 받을 수 있습니다.
 
 ---
 
@@ -181,29 +175,38 @@
 
 ### Windows 11
 
-**정식 릴리즈는 아직 없습니다.** 빌드와 단위 테스트(158개)는 통과했지만,
-입력이 실제 디아블로4에 전달되는지는 Windows 실기에서의 검증이 남아 있습니다.
-검증 없이 배포하면 아무 일도 일어나지 않는 매크로를 드리게 되므로, 확인 후 릴리즈합니다.
+> **[⬇️ Windows 11 베타 다운로드 (v1.6.0-beta.1)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.6.0-beta.1/DM_Helper-1.6.0-beta.1-windows-x64.zip)**
+> 압축을 풀고 `DM_Helper.exe`를 **관리자 권한으로 실행**하세요. 설치 프로그램이 따로 없습니다.
 
-직접 빌드하려면 [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)가 필요합니다:
+**프리릴리즈입니다.** 빌드와 단위 테스트(162개)는 통과했지만, 실제 디아블로4에서
+동작하는지는 아직 확인되지 않았습니다. 입력 주입이 차단되면 앱은 정상 실행되지만
+매크로가 아무 일도 하지 않은 채 조용히 동작합니다.
+
+**먼저 같은 폴더의 `DM_Helper_Spike.exe`를 관리자 권한으로 실행해 보세요.**
+9개 항목을 검사해 PASS/FAIL을 알려줍니다. 앱보다 먼저 확인하는 것을 권장합니다.
+
+| | |
+|---|---|
+| 상태 | 프리릴리즈 — 실기 검증 대기 |
+| 관리자 권한 | **필수** (입력 주입이 게임 프로세스보다 낮은 권한이면 차단됨) |
+| 요구사항 | Windows 11 x64. 앱은 추가 설치 불필요 |
+| 스파이크 도구 | .NET 8 런타임 필요 ([다운로드](https://dotnet.microsoft.com/download/dotnet/8.0)) |
+| 상세 정보 | [win/README.md](win/README.md) |
+
+동작하지 않으면 [Issues](https://github.com/esketch-ai/mac-diablo-helper/issues)에
+**1번(관리자 권한)** 과 **6번(훅 캡처)** 결과를 함께 제보해 주세요.
+
+<details>
+<summary>직접 빌드하기</summary>
+
+[.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)가 필요합니다:
 
 ```bash
 cd win
 dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
 ```
 
-산출물: `src/DM_Helper.Wpf/bin/Release/net8.0-windows/win-x64/publish/DM_Helper.exe`
-
-> ⚠️ **반드시 관리자 권한으로 실행하세요.** Windows는 UIPI 정책상 헬퍼가 게임보다 낮은
-> 권한이면 입력 주입을 조용히 버립니다. 제목 표시줄에 `관리자: DM_Helper`가 보여야 합니다.
-
-동작 확인용 검증 도구도 함께 빌드할 수 있습니다:
-
-```bash
-dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
-```
-
-9개 항목을 검사하고 PASS/FAIL을 출력합니다. 상세 내용은 [win/README.md](win/README.md).
+</details>
 
 ---
 

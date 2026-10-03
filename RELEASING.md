@@ -47,6 +47,23 @@ artifacts as `dm-helper-windows-x64`, with the spike alongside it as
 
 ## Publishing
 
+**1.6.0-beta.1 is already published** and is the current example. It is a pre-release, so
+the `Latest` badge stays on the macOS v1.5 build — a beta that nobody has verified should not
+be what a visitor downloads first.
+
+```bash
+gh release create v1.6.0-beta.2 \
+  --repo esketch-ai/mac-diablo-helper \
+  --title "DM_Helper 1.6.0-beta.2 — Windows 11 프리릴리즈" \
+  --notes-file NOTES.md \
+  --prerelease \
+  --target master \
+  DM_Helper-*-windows-x64.zip DM_Helper-*-windows-x64.zip.sha256
+```
+
+When the spike passes and the Windows build is signed, publish `v1.6.0` as a normal
+(non-prerelease) release. Only then does `Latest` move to the two-platform build.
+
 1. Tag and push:
 
    ```bash
@@ -61,6 +78,18 @@ artifacts as `dm-helper-windows-x64`, with the spike alongside it as
 
 4. Upload the signed macOS zip manually — the CI runner has no signing identity, so that
    job only prints a note.
+
+## Packaging notes for Windows
+
+Two details that are easy to get wrong when zipping from a non-Windows machine:
+
+- **Set the UTF-8 flag on archive entries.** macOS `zip` writes Korean filenames in UTF-8
+  but without bit 11, and Windows then reads them in the OEM codepage and shows mojibake.
+  Use Python's `zipfile` with `info.flag_bits |= 0x800`, or `zip -UN=UTF8`.
+- **Name the folder after the release.** Extracting a zip whose root is called `ziproot`
+  or `out` leaves a stray directory in the user's Downloads folder.
+
+Ship the PDB alongside the exe so crash reports can be symbolised.
 
 ## CI
 

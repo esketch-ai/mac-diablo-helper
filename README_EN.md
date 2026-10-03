@@ -19,21 +19,18 @@
 
 > ## 🪟 Windows 11
 >
-> **A native Windows 11 build is ready.** Same repository, same feature set.
+> **[⬇️ Beta download](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.6.0-beta.1/DM_Helper-1.6.0-beta.1-windows-x64.zip)**
+> Unzip it and run `DM_Helper.exe` **as administrator**. No installer required.
+>
+> **This is a pre-release.** The build and tests pass, but behaviour in Diablo 4 is
+> unconfirmed. Run `DM_Helper_Spike.exe` from the same folder first.
 >
 > | | |
 > |---|---|
-> | Status | **Awaiting hardware verification** — builds clean, 158 unit tests pass |
+> | Status | Pre-release — awaiting hardware verification |
 > | Administrator | **Required** — injection is blocked below the game's privilege level |
-> | Stack | C# / WPF / .NET 8 |
+> | Requirements | Windows 11 x64, no separate install for the app |
 > | Details | [win/README.md](win/README.md) |
->
-> No official release until it is confirmed working on real hardware. See
-> [Download](#-download).
->
-> **The built exe ships as a CI artifact on every push.**
-> Open GitHub Actions, take the latest "CI" run, and download from Artifacts:
-> `dm-helper-windows-x64` and `dm-helper-spike-windows-x64`. No local build required.
 
 ---
 
@@ -173,30 +170,38 @@ After installing, grant the app permission under
 
 ### Windows 11
 
-**No official release yet.** The build succeeds and all 158 unit tests pass, but whether
-input actually reaches Diablo 4 still needs verification on real Windows hardware. Shipping
-it unverified would hand you a macro that silently does nothing, so we are holding.
+> **[⬇️ Download Windows 11 beta (v1.6.0-beta.1)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.6.0-beta.1/DM_Helper-1.6.0-beta.1-windows-x64.zip)**
+> Unzip it and run `DM_Helper.exe` **as administrator**. No installer required.
 
-To build it yourself you need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0):
+**This is a pre-release.** The build passes and all 162 unit tests pass, but it has not
+been confirmed working in Diablo 4 yet. If input injection is blocked, the app runs
+normally while the macro silently does nothing.
+
+**Run `DM_Helper_Spike.exe` from the same folder first, as administrator.** It checks nine
+things and reports PASS/FAIL. We recommend this before the app.
+
+| | |
+|---|---|
+| Status | Pre-release — awaiting hardware verification |
+| Administrator | **Required** — injection is blocked below the game's privilege level |
+| Requirements | Windows 11 x64. No separate install for the app |
+| Spike tool | Needs the .NET 8 runtime ([download](https://dotnet.microsoft.com/download/dotnet/8.0)) |
+| Details | [win/README.md](win/README.md) |
+
+If it does not work, please open an [Issue](https://github.com/esketch-ai/mac-diablo-helper/issues)
+and include the results of **check 1 (elevation)** and **check 6 (hook capture)**.
+
+<details>
+<summary>Building it yourself</summary>
+
+You need the [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0):
 
 ```bash
 cd win
 dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
 ```
 
-Output: `src/DM_Helper.Wpf/bin/Release/net8.0-windows/win-x64/publish/DM_Helper.exe`
-
-> ⚠️ **You must run it as administrator.** Under the Windows UIPI policy, input injection is
-> silently discarded when the helper runs at a lower privilege level than the game. The
-> title bar must read `Administrator: DM_Helper`.
-
-A verification tool can be built alongside it:
-
-```bash
-dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
-```
-
-It checks nine things and reports PASS/FAIL for each. See [win/README.md](win/README.md).
+</details>
 
 ---
 
