@@ -30,6 +30,10 @@
 >
 > No official release until it is confirmed working on real hardware. See
 > [Download](#-download).
+>
+> **The built exe ships as a CI artifact on every push.**
+> Open GitHub Actions, take the latest "CI" run, and download from Artifacts:
+> `dm-helper-windows-x64` and `dm-helper-spike-windows-x64`. No local build required.
 
 ---
 

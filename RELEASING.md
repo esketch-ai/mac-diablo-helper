@@ -41,6 +41,10 @@ dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
 The spike exists because the failure mode is silent: if `SendInput` is blocked, the app
 runs fine and the macro simply never fires. A green build proves nothing about this.
 
+No local build is needed to try the current binary — every push publishes it to the CI run's
+artifacts as `dm-helper-windows-x64`, with the spike alongside it as
+`dm-helper-spike-windows-x64`.
+
 ## Publishing
 
 1. Tag and push:

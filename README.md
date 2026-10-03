@@ -33,6 +33,10 @@
 > ```
 >
 > 실기 동작을 확인하기 전에는 정식 릴리즈를 올리지 않습니다. 아래 [다운로드](#-다운로드) 참고.
+>
+> **빌드된 exe는 매 커밋마다 CI 아티팩트로 올라갑니다.**
+> GitHub Actions → 가장 최근 "CI" 실행 → Artifacts → `dm-helper-windows-x64`,
+> `dm-helper-spike-windows-x64` 를 받으면 됩니다. 별도 빌드 없이 exe만 받을 수 있습니다.
 
 ---
 
