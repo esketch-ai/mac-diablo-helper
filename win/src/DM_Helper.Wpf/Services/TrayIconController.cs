@@ -36,6 +36,20 @@ public sealed class TrayIconController : IDisposable
     public event Action? GuideRequested;
     public event Action? QuitRequested;
 
+    /// <summary>
+    /// Drops every subscriber. The tray outlives the settings window, so the window must
+    /// detach on close or a later click would dispatch into a dead view.
+    /// </summary>
+    public void ClearHandlers()
+    {
+        ToggleRequested = null;
+        OpenerRequested = null;
+        SettingsRequested = null;
+        PresetHubRequested = null;
+        GuideRequested = null;
+        QuitRequested = null;
+    }
+
     public TrayIconController()
     {
         _statusItem.Font = new Font(_statusItem.Font, FontStyle.Bold);

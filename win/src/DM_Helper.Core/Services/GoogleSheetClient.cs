@@ -125,11 +125,41 @@ public sealed class GoogleSheetClient
     {
         if (string.IsNullOrWhiteSpace(body)) return null;
 
-        var open = body.IndexOf("(", StringComparison.Ordinal);
+        var open = body.IndexOf("google.visualization.Query.setResponse", StringComparison.Ordinal);
+        if (open < 0) return null;
+
+        // Skip past the function name to its opening paren, then to the matching close.
+        // Slicing from the paren itself (as an earlier version did) left the leading '('
+        // in the JSON text, so every parse threw and the hub silently showed no presets.
+        open = body.IndexOf('(', open);
         var close = body.LastIndexOf(')');
         if (open < 0 || close <= open) return null;
 
-        var envelope = JsonSerializer.Deserialize<JsonElement>(body[open..(close + 1)]);
+        var json = body[(open + 1)..close];
+
+        // The table arrives as an embedded JSON string in some responses; unwrap it once.
+        if (json.Length >= 2 && json[0] == '"')
+        {
+            try
+            {
+                json = JsonSerializer.Deserialize<string>(json) ?? json;
+            }
+            catch (JsonException)
+            {
+                return null;
+            }
+        }
+
+        JsonElement envelope;
+        try
+        {
+            envelope = JsonSerializer.Deserialize<JsonElement>(json);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+
         if (envelope.ValueKind != JsonValueKind.Object) return null;
 
         if (!envelope.TryGetProperty("table", out var table) ||
@@ -142,6 +172,11 @@ public sealed class GoogleSheetClient
             return new List<PresetItem>();
 
         var items = new List<PresetItem>(rows.GetArrayLength());
+
+        // The header is discovered from the first row that looks like one, then reused for
+        // every subsequent row. Parsing per row instead would let a data row containing the
+        // word "class" shift every column mapping after it.
+        ColumnMap? header = null;
 
         foreach (var row in rows.EnumerateArray())
         {
@@ -157,55 +192,102 @@ public sealed class GoogleSheetClient
                     : "");
             }
 
-            if (TryBuildFromRow(values, out var item)) items.Add(item);
+            // A row that looks like a header is structure, not data. Skipping it is what
+            // stops "직업" from appearing in the list as if it were a preset.
+            var asHeader = TryReadHeader(values);
+            if (asHeader is not null)
+            {
+                header ??= asHeader;
+                continue;
+            }
+
+            if (TryBuildFromRow(values, header, out var item)) items.Add(item);
         }
 
         return items;
     }
 
-    /// <summary>Maps header names to positions, so a reordered sheet still parses.</summary>
-    private static bool TryBuildFromRow(List<string> values, out PresetItem item)
+    /// <summary>
+    /// Reads a header row once, so every data row is mapped by column name instead of by
+    /// position. The header is detected by matching known labels rather than by assuming
+    /// the first row is one, because the sheet may have been created without one.
+    /// </summary>
+    private sealed class ColumnMap
+    {
+        private readonly List<string> _header;
+
+        public ColumnMap(List<string> header)
+        {
+            _header = header;
+            Author = Find("author", "작성자");
+            Season = Find("season", "시즌");
+            Class = Find("class", "직업");
+            Build = Find("build", "빌드");
+            Description = Find("desc", "설명");
+            PresetName = Find("presetname", "프리셋");
+        }
+
+        public int? Author { get; }
+        public int? Season { get; }
+        public int? Class { get; }
+        public int? Build { get; }
+        public int? Description { get; }
+        public int? PresetName { get; }
+
+        public bool IsUsable => Class is not null || Build is not null;
+
+        private int? Find(params string[] names)
+        {
+            foreach (var n in names)
+            {
+                for (var i = 0; i < _header.Count; i++)
+                {
+                    if (_header[i].Contains(n, StringComparison.OrdinalIgnoreCase)) return i;
+                }
+            }
+
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Decides whether a row is a header. Requires a class label and a build label in the
+    /// same row, which is a strong enough signal to avoid mistaking data for structure:
+    /// a preset row names a class (도적, Warlock) but never contains the word "class" or
+    /// "직업" as a field.
+    ///
+    /// Both English and Korean labels are matched because the shared sheet is edited by hand
+    /// and either header style is common.
+    /// </summary>
+    private static ColumnMap? TryReadHeader(List<string> values)
+    {
+        bool Has(params string[] needles) =>
+            values.Any(v => needles.Any(n => v.Contains(n, StringComparison.OrdinalIgnoreCase)));
+
+        if (!Has("class", "직업") || !Has("build", "빌드")) return null;
+
+        var map = new ColumnMap(values);
+        return map.IsUsable ? map : null;
+    }
+
+    /// <summary>Maps one data row into a preset, by name when a header exists, else by position.</summary>
+    private static bool TryBuildFromRow(List<string> values, ColumnMap? map, out PresetItem item)
     {
         item = new PresetItem();
 
-        // The sheet may or may not carry a header row; detect by looking for known labels.
-        var headerIndex = values.FindIndex(v =>
-            v.Contains("class", StringComparison.OrdinalIgnoreCase) &&
-            v.Contains("build", StringComparison.OrdinalIgnoreCase));
-
-        if (headerIndex >= 0)
+        if (map is not null)
         {
-            var header = values;
-            int? Col(params string[] names)
-            {
-                foreach (var n in names)
-                {
-                    var idx = header.FindIndex(h => h.Contains(n, StringComparison.OrdinalIgnoreCase));
-                    if (idx >= 0) return idx;
-                }
-                return null;
-            }
-
-            var cAuthor = Col("author", "작성자");
-            var cSeason = Col("season", "시즌");
-            var cClass = Col("class", "직업");
-            var cBuild = Col("build", "빌드");
-            var cDesc = Col("desc", "설명");
-            var cPreset = Col("presetname", "프리셋");
-
-            var offset = headerIndex + 1;
-
             string At(int? col) =>
-                col is null ? "" : values.ElementAtOrDefault(offset + col.Value) ?? "";
+                col is null ? "" : values.ElementAtOrDefault(col.Value) ?? "";
 
             item = new PresetItem
             {
-                Author = At(cAuthor),
-                Season = At(cSeason),
-                Class = At(cClass),
-                Build = At(cBuild),
-                Description = At(cDesc),
-                PresetName = At(cPreset),
+                Author = At(map.Author),
+                Season = At(map.Season),
+                Class = At(map.Class),
+                Build = At(map.Build),
+                Description = At(map.Description),
+                PresetName = At(map.PresetName),
             };
 
             return !string.IsNullOrWhiteSpace(item.Class) || !string.IsNullOrWhiteSpace(item.Build);

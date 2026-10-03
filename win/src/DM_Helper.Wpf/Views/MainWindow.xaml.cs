@@ -59,7 +59,11 @@ public partial class MainWindow : Window
         _app.Engine.OpenerStateChanged += _ => Dispatcher.Invoke(UpdateRunState);
         Closed += (_, _) =>
         {
-            // Closing the window must not stop the macro; the tray keeps it alive.
+            // Hiding the window must not stop the macro; the tray keeps it alive. But the
+            // self-focus guard must be cleared, or input stays suppressed forever once the
+            // settings window is closed.
+            SaveNow();
+
             InputPoster.OwnWindowHandle = 0;
             ForegroundWindow.OwnWindow = 0;
         };
@@ -134,7 +138,32 @@ public partial class MainWindow : Window
 
         tray.PresetHubRequested += () => Dispatcher.Invoke(() => new PresetShareWindow().ShowDialog());
         tray.GuideRequested += () => Dispatcher.Invoke(() => new HelpWindow().Show());
-        tray.QuitRequested += () => Dispatcher.Invoke(() => Application.Current.Shutdown());
+        tray.QuitRequested += () => Dispatcher.Invoke(() => OnQuitRequested());
+
+        // The tray outlives this window, so it must stop dispatching into a closed view.
+        // Without this, quitting after closing the settings window would either throw or
+        // silently do nothing depending on when the user clicked.
+        Closed += (_, _) => tray.ClearHandlers();
+    }
+
+    private void OnQuitRequested()
+    {
+        // Flush the profile first: the engine keeps running after this window closes, so
+        // an unsaved edit would otherwise be lost.
+        SaveNow();
+        Application.Current.Shutdown();
+    }
+
+    /// <summary>
+    /// Pushes the UI into the engine and writes the profile, cancelling any pending
+    /// debounced save so it cannot fire again against a stale state.
+    /// </summary>
+    private void SaveNow()
+    {
+        if (!_updating) CollectIntoEngine();
+
+        _saveTimer.Stop();
+        _app.Save(_profileId);
     }
 
     // =====================================================================

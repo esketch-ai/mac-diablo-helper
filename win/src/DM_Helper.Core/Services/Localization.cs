@@ -22,7 +22,11 @@ public sealed class Localization
 
     public static Localization Instance => _instance ??= new Localization();
 
-    private Localization()
+    /// <summary>
+    /// Public so tests can exercise a specific mode without touching the saved preference.
+    /// Production code should go through <see cref="Instance"/>.
+    /// </summary>
+    public Localization()
     {
         _mode = (LanguageMode)ConfigStore.Prefs.GetInt(PrefKey, (int)LanguageMode.Auto);
     }
@@ -257,6 +261,27 @@ public sealed class Localization
         ["alert_export_success"] = ("설정이 성공적으로 저장되었습니다.", "Profile settings exported successfully."),
         ["alert_error"] = ("오류", "Error"),
         ["alert_confirm"] = ("확인", "OK"),
+
+        // ---- Windows-only entries.
+        // The macOS dictionary has no equivalent for these: it carried them as hardcoded
+        // AppKit strings, and the Windows layout surfaces a few labels it did not need.
+        // Authored here so the table stays the single source of truth for UI copy.
+        ["box_options"] = ("편의기능", "Quality of life"),
+        ["box_single_repeat"] = ("단일반복키 (독립 반복)", "Single-repeat keys"),
+        ["hint_deadzone"] = ("커서가 스킬바나 미니맵 위에 있을 때 좌클릭 기술 발송을 막습니다.", "Suppresses a left-click skill when the cursor sits over the action bar or minimap."),
+        ["hint_quest"] = ("NPC 대화 중 누르고 있으면 모든 스킬이 멈춥니다.", "Holding it during dialogue pauses every skill."),
+        ["hint_speed"] = ("신단 획득 시 누르면 전체 주기가 조절됩니다. 음수는 빠르게, 양수는 느리게.", "Press after a time gift to shift the whole rotation. Negative is faster, positive is slower."),
+        ["hint_start_stop"] = ("시작/종료 키를 같게 두면 토글로 동작합니다. 창이 활성화된 상태에서는 키가 전송되지 않습니다.", "Sharing one key for start and stop makes it a toggle. No keys are sent while this app has focus."),
+        ["hint_stopped"] = ("게임을 창 활성화한 뒤 시작 키를 누르세요.", "Bring the game to the foreground and press the start key."),
+        ["hint_opener"] = ("준비 시퀀스를 실행하고 있습니다.", "Running the opener sequence."),
+        ["hint_running"] = ("동작 중입니다. 종료 키 또는 시작 키를 다시 누르세요.", "Running. Press the stop key again to halt."),
+        ["label_anti_disturbance"] = ("방해금지 데드존", "Anti-disturbance deadzone"),
+        ["label_sound"] = ("시작/종료 효과음", "Start/stop sound"),
+        ["label_speed_key"] = ("시간조절키", "Speed modifier"),
+        ["label_speed_offset"] = ("주기 보정(ms)", "Interval offset (ms)"),
+        ["label_speed_toggle"] = ("토글 모드 (신단 버프용)", "Toggle mode (time gift)"),
+        ["speed_toggle"] = ("토글", "Toggle"),
+        ["speed_hold"] = ("홀드", "Hold"),
     };
 
     private static readonly Dictionary<string, string> Ko = Table.ToDictionary(
