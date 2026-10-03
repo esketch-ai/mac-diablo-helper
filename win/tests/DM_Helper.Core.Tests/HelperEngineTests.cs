@@ -78,6 +78,23 @@ public class HelperEngineTests
         return c;
     }
 
+    /// <summary>
+    /// Waits for a condition instead of sleeping for a fixed span. The engine runs on its
+    /// own high-priority thread, so on a loaded machine the number of ticks produced in a
+    /// given span varies; polling makes the test express what it actually means.
+    /// </summary>
+    private static bool WaitUntil(Func<bool> condition, int timeoutMs = 3000)
+    {
+        var deadline = Environment.TickCount64 + timeoutMs;
+        while (Environment.TickCount64 < deadline)
+        {
+            if (condition()) return true;
+            Thread.Sleep(10);
+        }
+
+        return condition();
+    }
+
     [Fact]
     public void StartStopKeyStartsAndStopsTheEngine()
     {
@@ -138,11 +155,11 @@ public class HelperEngineTests
         using var _e = engine;
 
         engine.Start();
-        Thread.Sleep(400);
-        engine.Stop();
 
-        Assert.True(sink.CountOf("send:1") >= 5,
-            $"expected repeated '1' presses, log: {string.Join(",", sink.Log.Distinct())}");
+        Assert.True(WaitUntil(() => sink.CountOf("send:1") >= 5),
+            $"expected repeated '1' presses, saw {sink.CountOf("send:1")}");
+
+        engine.Stop();
     }
 
     /// <summary>
@@ -162,11 +179,11 @@ public class HelperEngineTests
         using var _e = engine;
 
         engine.Start();
-        Thread.Sleep(250);
-        engine.Stop();
 
-        Assert.True(sink.CountOf("send:1") >= 4,
+        Assert.True(WaitUntil(() => sink.CountOf("send:1") >= 4),
             $"unlinked slot should keep firing, saw {sink.CountOf("send:1")}");
+
+        engine.Stop();
     }
 
     /// <summary>An empty key is the only way to stop a slot firing.</summary>
@@ -201,14 +218,12 @@ public class HelperEngineTests
         using var _e = engine;
 
         engine.Start();
-        Thread.Sleep(80);
-
-        Assert.Equal(1, sink.CountOf("down:Mouse Right"));
+        Assert.True(WaitUntil(() => sink.CountOf("down:Mouse Right") == 1),
+            "the channel skill should have been pressed down once");
 
         engine.Stop();
-        Thread.Sleep(80);
-
-        Assert.Equal(1, sink.CountOf("up:Mouse Right"));
+        Assert.True(WaitUntil(() => sink.CountOf("up:Mouse Right") == 1),
+            "stopping should release the held channel skill");
     }
 
     [Fact]
@@ -229,12 +244,16 @@ public class HelperEngineTests
         engine.Start();
         Assert.True(engine.IsOpenerRunning);
 
-        Thread.Sleep(500);
+        // The opener ends when the skill timers take over. Polling only on the state change
+        // would return at the instant of handover, before the main loop has produced any
+        // ticks, so wait for the first post-opener press instead.
+        Assert.True(WaitUntil(() => !engine.IsOpenerRunning && sink.CountOf("send:3") >= 2),
+            $"main loop should take over after the opener; " +
+            $"openerRunning={engine.IsOpenerRunning}, main loop fired {sink.CountOf("send:3")}x");
 
         Assert.False(engine.IsOpenerRunning);
         Assert.Equal(1, sink.CountOf("send:1"));      // opener step 1, once
         Assert.Equal(2, sink.CountOf("send:2"));      // opener step 2, repeated twice
-        Assert.True(sink.CountOf("send:3") >= 2, "main loop should take over after the opener");
     }
 
     [Fact]
@@ -253,7 +272,8 @@ public class HelperEngineTests
         engine.Stop();
         sink.Clear();
 
-        Thread.Sleep(500);
+        // Step 2 was due 200ms after step 1; wait past that and confirm it never fired.
+        Thread.Sleep(600);
         Assert.Equal(0, sink.CountOf("send:2"));
     }
 
@@ -275,8 +295,8 @@ public class HelperEngineTests
         Assert.Equal(0, sink.CountOf("send:1"));
 
         engine.HandleInput(new InputEvent(InputKey.FromKey(Vk.F8), false, false));
-        Thread.Sleep(250);
-        Assert.True(sink.CountOf("send:1") > 0);
+        Assert.True(WaitUntil(() => sink.CountOf("send:1") > 0),
+            "releasing the quest key should resume the skill");
     }
 
     [Fact]
@@ -297,10 +317,12 @@ public class HelperEngineTests
 
         engine.Start();
         engine.HandleInput(new InputEvent(InputKey.FromKey(Vk.F7), true, false));
-        Thread.Sleep(250);
 
+        Assert.True(WaitUntil(() => sink.CountOf("send:2") > 0),
+            "the unlinked skill must keep firing while a special key is held");
+
+        Thread.Sleep(60);
         Assert.Equal(0, sink.CountOf("send:1"));
-        Assert.True(sink.CountOf("send:2") > 0, "unchecked skill must keep firing");
     }
 
     [Fact]
@@ -321,9 +343,9 @@ public class HelperEngineTests
         sink.Clear();
 
         engine.HandleInput(new InputEvent(InputKey.FromKey(Vk.F7), false, false));
-        Thread.Sleep(60);
 
-        Assert.Equal(1, sink.CountOf("send:1"));
+        Assert.True(WaitUntil(() => sink.CountOf("send:1") == 1),
+            "releasing a special key without cooldown wait should fire the skill once");
     }
 
     [Fact]
@@ -340,9 +362,11 @@ public class HelperEngineTests
         Assert.False(engine.IsRunning);
 
         engine.HandleInput(new InputEvent(InputKey.FromKey(Vk.Oem3), true, false));
-        Thread.Sleep(220);
 
-        Assert.True(sink.CountOf("send:Mouse Left") >= 4);
+        // Poll rather than sleep for a fixed time: a loaded runner may need longer to
+        // produce the same number of ticks, and the point is that it repeats at all.
+        Assert.True(WaitUntil(() => sink.CountOf("send:Mouse Left") >= 4),
+            $"expected repeated clicks while held, saw {sink.CountOf("send:Mouse Left")}");
 
         engine.HandleInput(new InputEvent(InputKey.FromKey(Vk.Oem3), false, false));
         sink.Clear();
@@ -363,12 +387,12 @@ public class HelperEngineTests
 
         // A wheel has no key-up, so each press toggles.
         engine.HandleInput(new InputEvent(InputKey.FromWheel(WheelDirection.Up), true, false));
-        Thread.Sleep(150);
-        Assert.True(sink.CountOf("send:Mouse Left") > 0);
+        Assert.True(WaitUntil(() => sink.CountOf("send:Mouse Left") > 0),
+            "the first wheel press should start the repeat");
 
         engine.HandleInput(new InputEvent(InputKey.FromWheel(WheelDirection.Up), true, false));
         sink.Clear();
-        Thread.Sleep(150);
+        Thread.Sleep(200);
         Assert.Equal(0, sink.CountOf("send:Mouse Left"));
     }
 
@@ -387,7 +411,11 @@ public class HelperEngineTests
         using var _e = engine;
 
         engine.Start();
-        Thread.Sleep(700);
+
+        // 3 generators then 1 spender; wait for enough cycles to judge the ratio.
+        Assert.True(WaitUntil(() => sink.CountOf("send:Mouse Right") >= 3),
+            $"expected several spender presses, saw {sink.CountOf("send:Mouse Right")}");
+
         engine.Stop();
 
         var gens = sink.CountOf("send:1");
@@ -408,8 +436,11 @@ public class HelperEngineTests
         config.AntiDisturbanceEnabled = true;
         config.SelectedResolution = "1920 x 1080 (FHD)";
 
-        // Cursor parked in the middle of the action bar.
+        // Cursor parked in the middle of the action bar. The monitor geometry is pinned too:
+        // without it the filter queries the host, so a runner with a different virtual
+        // display size computes a different rectangle and the assertion becomes meaningless.
         Services.DeadzoneFilter.CursorOverride = (960, 950);
+        Services.DeadzoneFilter.MonitorOverride = new MonitorRect(0, 0, 1920, 1080);
 
         try
         {
@@ -425,6 +456,75 @@ public class HelperEngineTests
         finally
         {
             Services.DeadzoneFilter.CursorOverride = null;
+            Services.DeadzoneFilter.MonitorOverride = null;
+        }
+    }
+
+    /// <summary>
+    /// The deadzone must be the only thing suppressing the click: with the cursor away from
+    /// the action bar the same slot fires normally. Guards against the previous test passing
+    /// for the wrong reason.
+    /// </summary>
+    [Fact]
+    public void AntiDisturbanceAllowsClicksAwayFromTheActionBar()
+    {
+        var config = MinimalConfig();
+        config.SkillKeys[0] = InputKey.FromMouse(MouseButton.Left);
+        config.SkillDelays[0] = 25;
+        config.SkillChecks[0] = true;
+        config.AntiDisturbanceEnabled = true;
+        config.SelectedResolution = "1920 x 1080 (FHD)";
+
+        Services.DeadzoneFilter.CursorOverride = (960, 400);
+        Services.DeadzoneFilter.MonitorOverride = new MonitorRect(0, 0, 1920, 1080);
+
+        try
+        {
+            var (engine, sink) = Build(config);
+            using var _e = engine;
+
+            engine.Start();
+            Thread.Sleep(250);
+            engine.Stop();
+
+            Assert.True(sink.CountOf("send:Mouse Left") > 0,
+                "the click should be allowed when the cursor is not over the action bar");
+        }
+        finally
+        {
+            Services.DeadzoneFilter.CursorOverride = null;
+            Services.DeadzoneFilter.MonitorOverride = null;
+        }
+    }
+
+    [Fact]
+    public void DisablingAntiDisturbanceAllowsClicksOverTheActionBar()
+    {
+        var config = MinimalConfig();
+        config.SkillKeys[0] = InputKey.FromMouse(MouseButton.Left);
+        config.SkillDelays[0] = 25;
+        config.SkillChecks[0] = true;
+        config.AntiDisturbanceEnabled = false;
+
+        Services.DeadzoneFilter.CursorOverride = (960, 950);
+        Services.DeadzoneFilter.MonitorOverride = new MonitorRect(0, 0, 1920, 1080);
+
+        try
+        {
+            var (engine, sink) = Build(config);
+            using var _e = engine;
+
+            engine.Start();
+            Thread.Sleep(250);
+            engine.Stop();
+
+            Assert.True(sink.CountOf("send:Mouse Left") > 0,
+                "with the filter off the click must go through");
+        }
+        finally
+        {
+            Services.DeadzoneFilter.CursorOverride = null;
+            Services.DeadzoneFilter.MonitorOverride = null;
         }
     }
 
@@ -455,7 +555,8 @@ public class HelperEngineTests
         using var _e = engine;
 
         engine.Start();
-        Thread.Sleep(120);
+        Assert.True(WaitUntil(() => sink.CountOf("send:1") > 0),
+            "the initial config should fire its skill slot");
 
         var updated = MinimalConfig();
         updated.SkillKeys[0] = InputKey.FromKey(Vk.D2);
@@ -464,11 +565,11 @@ public class HelperEngineTests
         engine.Config = updated;
 
         sink.Clear();
-        Thread.Sleep(200);
-        engine.Stop();
-
-        Assert.True(sink.CountOf("send:2") > 0);
+        Assert.True(WaitUntil(() => sink.CountOf("send:2") > 0),
+            "the replaced config should take over the timers");
         Assert.Equal(0, sink.CountOf("send:1"));
+
+        engine.Stop();
     }
 
     [Fact]

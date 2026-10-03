@@ -20,6 +20,14 @@ public static class DeadzoneFilter
     /// </summary>
     internal static (int X, int Y)? CursorOverride;
 
+    /// <summary>
+    /// Cached monitor geometry. Without this the filter asks the OS, so a test asserting on
+    /// a 1920x1080 layout would silently compute against whatever display the runner
+    /// happens to have - which is how the same test passed on macOS and failed on a
+    /// Windows runner with a different virtual display size.
+    /// </summary>
+    internal static MonitorRect? MonitorOverride;
+
     public static bool IsCursorInUiDeadzone(string? resolutionMode) => Evaluate(Cursor(), resolutionMode);
 
     private static (int X, int Y) Cursor()
@@ -74,6 +82,8 @@ public static class DeadzoneFilter
 
     private static MonitorRect MonitorGeometry(int x, int y)
     {
+        if (MonitorOverride is { } forced) return forced;
+
         if (OperatingSystem.IsWindows())
         {
             var mon = Monitors.MonitorForPoint(x, y);
