@@ -106,14 +106,21 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dm-helper-windows-x64
-          path: ${{ env.GITHUB_WORKSPACE }}/win/out/app/**
+          # Relative to the workspace, not an env expansion: GITHUB_WORKSPACE is not
+          # available inside the `with:` block, and an unexpanded path silently matches
+          # nothing while the step still reports success.
+          path: win/out/app/**
+          # Default is 'warn', which let a broken path pass as success. These artifacts are
+          # the only way to get the binary out of CI, so an empty one must fail loudly.
+          if-no-files-found: error
           retention-days: 30
 
       - name: Upload verification tool
         uses: actions/upload-artifact@v4
         with:
           name: dm-helper-spike-windows-x64
-          path: ${{ env.GITHUB_WORKSPACE }}/win/out/spike/**
+          path: win/out/spike/**
+          if-no-files-found: error
           retention-days: 30
 
   # ---------------------------------------------------------------------------
@@ -174,4 +181,5 @@ jobs:
         with:
           name: dm-helper-macos-unsigned
           path: ${{ steps.app.outputs.path }}
+          if-no-files-found: error
           retention-days: 30
