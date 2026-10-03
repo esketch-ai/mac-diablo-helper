@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>DM_Helper.Core</RootNamespace>
+    <AssemblyName>DM_Helper.Core</AssemblyName>
+    <!--
+      net8.0 (not net8.0-windows) on purpose: the whole Win32 surface is P/Invoke,
+      which compiles on any host OS and only fails when actually called. Keeping the
+      library platform-neutral lets the domain logic and the interop marshalling be
+      unit-tested from any machine.
+    -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DM_Helper.Core.Tests" />
+  </ItemGroup>
+
+</Project>

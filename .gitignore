@@ -51,3 +51,10 @@ Carthage/Build
 
 fastlane/report.xml
 fastlane/screenshots
+
+# .NET (Windows 11 port)
+bin/
+obj/
+*.user
+.vs/
+publish/

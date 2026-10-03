@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <LangVersion>12.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Company>DM_Helper</Company>
+    <Product>DM_Helper</Product>
+    <Version>1.5.0</Version>
+    <Copyright>Copyright © 2016 sunghyuk. All rights reserved.</Copyright>
+    <NeutralLanguage>ko-KR</NeutralLanguage>
+  </PropertyGroup>
+
+</Project>
