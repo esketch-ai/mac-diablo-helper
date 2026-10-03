@@ -46,14 +46,15 @@ jobs:
           Write-Host "building $tag"
 
       - name: Publish self-contained single file
-        working-directory: win
-        run: dotnet publish src/DM_Helper.Wpf/DM_Helper.Wpf.csproj -c Release -r win-x64 --nologo -o out
+        # No working-directory: paths stay explicit from the repository root, matching the
+        # verification step below.
+        run: dotnet publish win/src/DM_Helper.Wpf/DM_Helper.Wpf.csproj -c Release -r win-x64 --nologo -o "$env:GITHUB_WORKSPACE/win/out"
 
       - name: Verify the manifest reached the binary
         shell: pwsh
         run: |
-          $exe = "win/out/DM_Helper.exe"
-          if (-not (Test-Path $exe)) { throw "DM_Helper.exe was not produced" }
+          $exe = Join-Path $env:GITHUB_WORKSPACE "win/out/DM_Helper.exe"
+          if (-not (Test-Path $exe)) { throw "DM_Helper.exe was not produced at $exe" }
 
           $text = [System.Text.Encoding]::UTF8.GetString([System.IO.File]::ReadAllBytes($exe))
           foreach ($needle in @('requireAdministrator', 'PerMonitorV2')) {

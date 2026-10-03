@@ -42,12 +42,10 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore
-        working-directory: win
-        run: dotnet restore tests/DM_Helper.Core.Tests/DM_Helper.Core.Tests.csproj
+        run: dotnet restore win/tests/DM_Helper.Core.Tests/DM_Helper.Core.Tests.csproj
 
       - name: Test
-        working-directory: win
-        run: dotnet test tests/DM_Helper.Core.Tests/DM_Helper.Core.Tests.csproj --no-restore -c Release --logger "trx;LogFileName=results.trx" --results-directory "${{ github.workspace }}/test-results"
+        run: dotnet test win/tests/DM_Helper.Core.Tests/DM_Helper.Core.Tests.csproj --no-restore -c Release --logger "trx;LogFileName=results.trx" --results-directory "${{ github.workspace }}/test-results"
 
       - name: Upload test results
         if: always()
@@ -75,20 +73,23 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Publish self-contained single file
-        working-directory: win
-        run: dotnet publish src/DM_Helper.Wpf/DM_Helper.Wpf.csproj -c Release -r win-x64 --nologo -o out/app
+        # Absolute output paths: a working-directory would make this step resolve out/app
+        # relative to win/, while later steps run from the repository root.
+        run: dotnet publish win/src/DM_Helper.Wpf/DM_Helper.Wpf.csproj -c Release -r win-x64 --nologo -o "$env:GITHUB_WORKSPACE/win/out/app"
 
       - name: Publish the Phase 0 verification tool
-        working-directory: win
-        run: dotnet publish src/DM_Helper.Spike/DM_Helper.Spike.csproj -c Release -r win-x64 --self-contained false --nologo -o out/spike
+        run: dotnet publish win/src/DM_Helper.Spike/DM_Helper.Spike.csproj -c Release -r win-x64 --self-contained false --nologo -o "$env:GITHUB_WORKSPACE/win/out/spike"
 
       - name: Verify the manifest reached the binary
         # A build can silently drop app.manifest, leaving the app unelevated and every
         # SendInput call quietly blocked by UIPI. Assert on the published exe.
+        #
+        # Paths are absolute because this step runs from the repository root while the
+        # publish step targets a directory under win/.
         shell: pwsh
         run: |
-          $exe = "out/app/DM_Helper.exe"
-          if (-not (Test-Path $exe)) { throw "DM_Helper.exe was not produced" }
+          $exe = Join-Path $env:GITHUB_WORKSPACE "win/out/app/DM_Helper.exe"
+          if (-not (Test-Path $exe)) { throw "DM_Helper.exe was not produced at $exe" }
 
           $bytes = [System.IO.File]::ReadAllBytes($exe)
           $text  = [System.Text.Encoding]::UTF8.GetString($bytes)
@@ -105,14 +106,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dm-helper-windows-x64
-          path: win/out/app/**
+          path: ${{ env.GITHUB_WORKSPACE }}/win/out/app/**
           retention-days: 30
 
       - name: Upload verification tool
         uses: actions/upload-artifact@v4
         with:
           name: dm-helper-spike-windows-x64
-          path: win/out/spike/**
+          path: ${{ env.GITHUB_WORKSPACE }}/win/out/spike/**
           retention-days: 30
 
   # ---------------------------------------------------------------------------
@@ -129,10 +130,11 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build the Objective-C target
-        # -target is used rather than -scheme because the repository contains no shared
-        # .xcscheme file, so -scheme would depend on Xcode autocreating one on the runner.
-        # The product name is DM_Helper even though the target is d3key; the setting lives
-        # in the pbxproj as PRODUCT_NAME.
+        # -scheme "DM_Helper" rather than -target d3key: xcodebuild refuses -derivedDataPath
+        # without one of -scheme/-testProductsPath/-xctestrun, and without an explicit
+        # output path the .app lands somewhere version dependent and unsearchable.
+        # The scheme name comes from the product name (DM_Helper in the pbxproj) because the
+        # repository has no shared .xcscheme; xcodebuild autocreates one from the target.
         #
         # No signing: a CI-signed build would not be distributable anyway, and it would
         # produce an artifact that differs from the released one in a confusing way.
@@ -140,7 +142,7 @@ jobs:
           set -euo pipefail
           xcodebuild \
             -project "D3 Skill Assistant.xcodeproj" \
-            -target d3key \
+            -scheme "DM_Helper" \
             -configuration Release \
             -derivedDataPath "$RUNNER_TEMP/dd" \
             ARCHS="arm64 x86_64" \
@@ -154,11 +156,16 @@ jobs:
         id: app
         run: |
           set -euo pipefail
-          APP=$(find "$RUNNER_TEMP/dd" -name "DM_Helper.app" -type d | head -1)
+          # The Release products dir is deterministic given -derivedDataPath, but search
+          # anyway so an Xcode layout change does not silently skip the upload.
+          APP=$(find "$RUNNER_TEMP/dd/Build/Products" -name "DM_Helper.app" -type d 2>/dev/null | head -1 || true)
+
           if [ -z "$APP" ]; then
-            echo "::error::DM_Helper.app was not produced by the build"
+            echo "::error::DM_Helper.app was not produced under $RUNNER_TEMP/dd/Build/Products"
+            find "$RUNNER_TEMP/dd/Build/Products" -maxdepth 2 -type d || true
             exit 1
           fi
+
           echo "path=$APP" >> "$GITHUB_OUTPUT"
           echo "found $APP"
 
