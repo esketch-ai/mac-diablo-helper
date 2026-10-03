@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>DM_Helper.Wpf</RootNamespace>
+    <AssemblyName>DM_Helper</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <!--
+      win-x64 only: the helper is x64 because it must be able to inject into an x64 game
+      process.
+
+      EnableWindowsTargeting lets the project restore and compile on macOS/Linux for CI.
+      It does NOT make the app runnable there - WPF is Windows-only, so a build on a
+      non-Windows host proves the code compiles but not that the XAML renders. Use
+      DM_Helper.Spike for cross-OS verification and a real Win11 machine for the UI.
+    -->
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <!--
+      Pinned unconditionally. Left to inference, building on macOS resolves the RID to
+      osx-arm64 and there is no WPF runtime pack for it, so `dotnet build` fails on any
+      non-Windows host. A command-line `-r win-x64` still wins, because global properties
+      override project properties.
+    -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+
+    <!-- Single self-contained exe for distribution. -->
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <SatelliteResourceLanguages>ko;en</SatelliteResourceLanguages>
+
+    <!--
+      WinForms is enabled for exactly one thing: the tray NotifyIcon. WPF has no built-in
+      tray icon, and adding a third-party package for a single icon would be a poor trade
+      in an app that otherwise has no external dependencies. WinForms is in-box and works
+      fine alongside WPF.
+    -->
+    <UseWindowsForms>true</UseWindowsForms>
+
+    <!--
+      DPI awareness is declared three times on purpose, and WFAC010 is suppressed:
+
+      1. app.manifest (PerMonitorV2) - the real guarantee. It applies before any managed
+         code runs, so no window or cursor query can ever see a wrongly-scaled coordinate
+         system. PerMonitorV2 is what makes GetCursorPos report physical pixels, which the
+         anti-disturbance deadzone maths depends on.
+      2. ApplicationHighDpiMode - so the WinForms side (the tray icon) agrees.
+      3. Monitors.EnsurePerMonitorDpiAwareness() at startup - a runtime re-assert in case
+         the manifest was stripped by a repackager.
+
+      WFAC010 asks for DPI to be configured in code only. Removing the manifest declaration
+      to silence it would weaken guarantees 1 and 3 for no benefit, so the analyzer is
+      muted and the redundancy is kept.
+    -->
+    <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+
+    <!-- Shell and taskbar icon. -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Enabling WinForms injects System.Windows.Forms and System.Drawing into the implicit
+      global usings, which makes Application, UserControl, MessageBox, Color and a dozen
+      other names ambiguous against their WPF counterparts across the whole project. Only
+      Services/TrayIconController.cs actually wants them, so the implicit ones are removed
+      and that one file opts in explicitly.
+    -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DM_Helper.Core/DM_Helper.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="app.manifest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Icons are copied next to the exe so LoadIcon can find them by name. -->
+    <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

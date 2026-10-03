@@ -1,0 +1,453 @@
+<Window x:Class="DM_Helper.Wpf.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ctrl="clr-namespace:DM_Helper.Wpf.Controls"
+        xmlns:local="clr-namespace:DM_Helper.Wpf.Views"
+        Title="DM_Helper" Height="740" Width="920"
+        MinHeight="700" MinWidth="880"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource WindowBgBrush}"
+        UseLayoutRounding="True"
+        TextOptions.TextFormattingMode="Display">
+
+    <Grid Margin="12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- ================= Top bar ================= -->
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" x:Name="ProfileLabel" Text="프로필" Margin="0,0,6,0" FontWeight="Bold" />
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <RadioButton x:Name="Profile1" Content="1" Tag="1" Checked="OnProfileChanged"
+                             Style="{StaticResource ProfileRadio}" />
+                <RadioButton x:Name="Profile2" Content="2" Tag="2" Checked="OnProfileChanged"
+                             Style="{StaticResource ProfileRadio}" />
+                <RadioButton x:Name="Profile3" Content="3" Tag="3" Checked="OnProfileChanged"
+                             Style="{StaticResource ProfileRadio}" />
+                <RadioButton x:Name="Profile4" Content="4" Tag="4" Checked="OnProfileChanged"
+                             Style="{StaticResource ProfileRadio}" />
+                <RadioButton x:Name="Profile5" Content="5" Tag="5" Checked="OnProfileChanged"
+                             Style="{StaticResource ProfileRadio}" />
+            </StackPanel>
+
+            <ComboBox Grid.Column="2" x:Name="PresetCombo" Width="190" Margin="12,0,0,0"
+                      SelectionChanged="OnPresetSelected" />
+
+            <Button Grid.Column="3" x:Name="RunButton" Content="▶ 동작 시작"
+                    Style="{StaticResource PrimaryButton}" Margin="12,0,0,0"
+                    Click="OnRunClick" />
+
+            <Button Grid.Column="4" x:Name="OpenerButton" Content="⚡ 준비 시퀀스"
+                    Style="{StaticResource SecondaryButton}" Margin="6,0,0,0"
+                    Click="OnOpenerClick" />
+
+            <StackPanel Grid.Column="6" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Content="🌐 시트 공유" Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,6,0" Click="OnPresetHubClick" />
+                <Button Content="📖 가이드" Style="{StaticResource SecondaryButton}"
+                        Click="OnGuideClick" />
+                <ComboBox x:Name="LangCombo" Width="86" Margin="6,0,0,0"
+                          SelectionChanged="OnLangChanged" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ================= Status ================= -->
+        <Border Grid.Row="1" Background="{StaticResource PanelBgBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                CornerRadius="4" Padding="10,6" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" x:Name="StatusLabel" Text="○ 정지됨" FontWeight="Bold" />
+
+                <TextBlock Grid.Column="1" x:Name="HintLabel" Margin="16,0,0,0"
+                           Foreground="{StaticResource SubtleTextBrush}"
+                           TextTrimming="CharacterEllipsis" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <TextBlock x:Name="MemoLabel" Text="메모:" Foreground="{StaticResource SubtleTextBrush}" />
+                    <TextBox x:Name="MemoBox" Width="230" Margin="6,0,0,0"
+                             TextChanged="OnFieldEdited" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ================= Tabs ================= -->
+        <TabControl Grid.Row="2" x:Name="Tabs">
+
+            <!-- ============ Tab 1: Basic helper ============ -->
+            <TabItem x:Name="TabHelper">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
+
+                        <GroupBox x:Name="BoxStartStop" Header="시작 / 종료 &amp; 준비 시퀀스 키">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" x:Name="LblStartKey" Text="시작 키" Margin="0,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="0" Grid.Column="1" Margin="4"
+                                                    InputKeyChanged="OnKeyCaptured" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="2" x:Name="LblStopKey" Text="종료 키" Margin="12,4,4,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="0" Grid.Column="3" Margin="4"
+                                                    InputKeyChanged="OnKeyCaptured" />
+
+                                <TextBlock Grid.Row="0" Grid.Column="4" x:Name="LblOpenerKey" Text="준비 키" Margin="12,4,4,4" />
+                                <StackPanel Grid.Row="0" Grid.Column="5" Orientation="Horizontal" Margin="4">
+                                    <ctrl:KeyCaptureBox x:Name="MainOpenerKeyBox" Width="120"
+                                                        InputKeyChanged="OnKeyCaptured" />
+                                    <CheckBox x:Name="MainOpenerCheck" Content="사용" Margin="8,0,0,0"
+                                              VerticalAlignment="Center"
+                                              Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+                                </StackPanel>
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="6"
+                                           x:Name="StartStopHint"
+                                           Foreground="{StaticResource SubtleTextBrush}"
+                                           Margin="0,8,0,0" TextWrapping="Wrap"
+                                           Text="시작/종료 키를 같게 설정하면 토글로 동작합니다. 창이 활성화된 상태에서는 키가 전송되지 않습니다." />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxInGame" Header="종료 키 (인게임 UI 단축키 시 중단)">
+                            <UniformGrid Columns="4">
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblInventory" Text="소지품" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="InventoryKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblSkills" Text="기술" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="SkillsKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblFollower" Text="추종자" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="FollowerKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblMap" Text="지도" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="MapKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblWorldMap" Text="세계지도" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="WorldMapKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblPortal" Text="차원문" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="PortalKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblChat" Text="채팅" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="ChatKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                                <StackPanel Margin="0,3" Orientation="Horizontal">
+                                    <TextBlock x:Name="LblWhisper" Text="귓속말" Width="66" />
+                                    <ctrl:KeyCaptureBox x:Name="WhisperKeyBox" InputKeyChanged="OnKeyCaptured" />
+                                </StackPanel>
+                            </UniformGrid>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxSkills" Header="기술 1~8 (시전 방식: 연타 / 홀드)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="30" />
+                                    <ColumnDefinition Width="46" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="V" FontWeight="Bold" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="키" FontWeight="Bold" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="" />
+                                <TextBlock Grid.Row="0" Grid.Column="3" Text="" />
+                                <TextBlock Grid.Row="0" Grid.Column="4" Text="ms" FontWeight="Bold" Margin="6,0,0,0" />
+
+                                <!-- Filled in code: one SkillRowControl per slot. -->
+                                <StackPanel x:Name="SkillRowsPanel" Grid.Row="1" Margin="0,4,0,0" />
+                            </Grid>
+                        </GroupBox>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Tab 2: Opener & combo ============ -->
+            <TabItem x:Name="TabRotation">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
+
+                        <GroupBox x:Name="BoxOpener" Header="초기 준비 시퀀스 (Opener &amp; Ramp-up)">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                    <CheckBox x:Name="OpenerCheck" Content="준비 시퀀스 사용"
+                                              Margin="0,0,12,0" Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+                                    <TextBlock x:Name="LblOpenerTrigger" Text="수동 실행 키" />
+                                    <ctrl:KeyCaptureBox x:Name="OpenerTriggerKeyBox" Width="110" Margin="6,0,12,0"
+                                                        InputKeyChanged="OnKeyCaptured" />
+                                    <Button x:Name="OpenerTestButton" Content="지금 실행"
+                                            Style="{StaticResource SecondaryButton}" Click="OnOpenerClick" />
+                                </StackPanel>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Grid.Row="0" Grid.Column="0" Text="단계" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Text="키" FontWeight="Bold" />
+                                    <TextBlock Grid.Row="0" Grid.Column="2" Text="ms" FontWeight="Bold" Margin="6,0,0,0" />
+                                    <TextBlock Grid.Row="0" Grid.Column="3" Text="반복" FontWeight="Bold" Margin="6,0,0,0" />
+                                    <TextBlock Grid.Row="0" Grid.Column="4" Text="설명" FontWeight="Bold" Margin="6,0,0,0" />
+
+                                    <local:OpenerStepRow x:Name="Step0" Grid.Row="1" Index="1" Margin="0,4" />
+                                    <local:OpenerStepRow x:Name="Step1" Grid.Row="2" Index="2" Margin="0,4" />
+                                    <local:OpenerStepRow x:Name="Step2" Grid.Row="3" Index="3" Margin="0,4" />
+                                    <local:OpenerStepRow x:Name="Step3" Grid.Row="4" Index="4" Margin="0,4" />
+                                    <local:OpenerStepRow x:Name="Step4" Grid.Row="5" Index="5" Margin="0,4" />
+                                </Grid>
+                            </StackPanel>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxCombo" Header="스킬 연계 콤보 사이클 (생성기 → 소모기)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <CheckBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
+                                          x:Name="ComboCheck" Content="콤보 사이클 사용"
+                                          Margin="0,0,0,8" Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" x:Name="LblComboGen" Text="생성기" Margin="0,4,4,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="1" Grid.Column="1" x:Name="ComboGenKeyBox"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <TextBox Grid.Row="1" Grid.Column="2" x:Name="ComboGenCountBox" Width="44"
+                                         Margin="4" TextChanged="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="3" x:Name="LblComboSpend" Text="소모기" Margin="12,4,4,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="1" Grid.Column="4" x:Name="ComboSpendKeyBox"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <TextBox Grid.Row="1" Grid.Column="5" x:Name="ComboSpendCountBox" Width="44"
+                                         Margin="4" TextChanged="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="6" x:Name="LblComboInterval" Text="간격 ms" Margin="12,4,4,4" />
+                                <TextBox Grid.Row="1" Grid.Column="7" x:Name="ComboIntervalBox" Width="52"
+                                         Margin="4" TextChanged="OnFieldEdited" />
+                                <TextBlock Grid.Row="1" Grid.Column="8" x:Name="ComboExample" Margin="8,4,0,4"
+                                           Foreground="{StaticResource SubtleTextBrush}" />
+                            </Grid>
+                        </GroupBox>
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ============ Tab 3: Single repeat & QoL ============ -->
+            <TabItem x:Name="TabFeatures">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="8">
+                    <StackPanel>
+
+                        <GroupBox x:Name="BoxSingleRepeat" Header="단일반복키 (별도 반복)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="토글 키" FontWeight="Bold" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="동작" FontWeight="Bold" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Text="ms" FontWeight="Bold" Margin="6,0,0,0" />
+                                <TextBlock Grid.Row="0" Grid.Column="3" Text="사용" FontWeight="Bold" Margin="12,0,0,0" />
+                                <TextBlock Grid.Row="0" Grid.Column="4" Text="설명" FontWeight="Bold" Margin="6,0,0,0" />
+
+                                <local:SingleRepeatRow x:Name="Single0" Grid.Row="1" Index="1" Margin="0,4" />
+                                <local:SingleRepeatRow x:Name="Single1" Grid.Row="2" Index="2" Margin="0,4" />
+                                <local:SingleRepeatRow x:Name="Single2" Grid.Row="3" Index="3" Margin="0,4" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxSpecial" Header="특수키 (누르는 동안 일시정지)">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="특수키 1" Margin="0,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="0" Grid.Column="1" x:Name="SpecialKeyBox0"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <CheckBox Grid.Row="0" Grid.Column="2" x:Name="SpecialCooldown0"
+                                          Content="쿨타임 대기" Margin="8,4,0,4"
+                                          Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="특수키 2" Margin="0,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="1" Grid.Column="1" x:Name="SpecialKeyBox1"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <CheckBox Grid.Row="1" Grid.Column="2" x:Name="SpecialCooldown1"
+                                          Content="쿨타임 대기" Margin="8,4,0,4"
+                                          Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="특수키 3" Margin="0,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="2" Grid.Column="1" x:Name="SpecialKeyBox2"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <CheckBox Grid.Row="2" Grid.Column="2" x:Name="SpecialCooldown2"
+                                          Content="쿨타임 대기" Margin="8,4,0,4"
+                                          Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxQuestSpeed" Header="퀘스트키 &amp; 시간조절키">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+
+                                <TextBlock Grid.Row="0" Grid.Column="0" x:Name="LblQuestKey" Text="퀘스트키" Margin="0,4,4,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="0" Grid.Column="1" x:Name="QuestKeyBox"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <TextBlock Grid.Row="0" Grid.Column="2" Grid.ColumnSpan="2"
+                                           x:Name="QuestHint" Foreground="{StaticResource SubtleTextBrush}"
+                                           Margin="12,4,0,4" TextWrapping="Wrap" />
+
+                                <TextBlock Grid.Row="1" Grid.Column="0" x:Name="LblSpeedModKey" Text="시간조절키" Margin="0,4,4,4" />
+                                <ctrl:KeyCaptureBox Grid.Row="1" Grid.Column="1" x:Name="SpeedModKeyBox"
+                                                    InputKeyChanged="OnKeyCaptured" />
+                                <CheckBox Grid.Row="1" Grid.Column="2" Grid.ColumnSpan="2" x:Name="SpeedModToggleCheck"
+                                          Content="토글 모드 (신단 버프용)" Margin="12,4,0,4"
+                                          Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+
+                                <TextBlock Grid.Row="2" Grid.Column="0" x:Name="LblSpeedOffset" Text="주기 보정(ms)" Margin="0,4,4,4" />
+                                <TextBox Grid.Row="2" Grid.Column="1" x:Name="SpeedModOffsetBox" Width="70"
+                                         Margin="0,4" TextChanged="OnFieldEdited" />
+                                <TextBlock Grid.Row="2" Grid.Column="2" Grid.ColumnSpan="2"
+                                           x:Name="SpeedHint" Foreground="{StaticResource SubtleTextBrush}"
+                                           Margin="12,4,0,4" TextWrapping="Wrap" />
+                            </Grid>
+                        </GroupBox>
+
+                        <GroupBox x:Name="BoxOptions" Header="편의기능">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                                    <CheckBox x:Name="AntiDisturbanceCheck" Content="방해금지 데드존"
+                                              Margin="0,0,16,0" Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+                                    <CheckBox x:Name="SoundFeedbackCheck" Content="시작/종료 효과음"
+                                              Checked="OnFieldEdited" Unchecked="OnFieldEdited" />
+                                </StackPanel>
+
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock x:Name="LblResolution" Text="화면 해상도" Margin="0,0,6,0" />
+                                    <ComboBox x:Name="ResolutionCombo" Width="250" SelectionChanged="OnFieldEdited" />
+                                </StackPanel>
+
+                                <TextBlock x:Name="DeadzoneHint" Foreground="{StaticResource SubtleTextBrush}"
+                                           Margin="0,6,0,0" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </GroupBox>
+
+                        <Button Content="기본값으로 초기화" Style="{StaticResource SecondaryButton}"
+                                HorizontalAlignment="Left" Click="OnResetClick" />
+
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- ================= Bottom ================= -->
+        <Border Grid.Row="3" Background="{StaticResource PanelBgBrush}"
+                BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                CornerRadius="4" Padding="10,6" Margin="0,10,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" x:Name="FooterLabel"
+                           Foreground="{StaticResource SubtleTextBrush}" TextTrimming="CharacterEllipsis" />
+
+                <Button Grid.Column="1" Content="불러오기" Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,6,0" Click="OnImportClick" />
+                <Button Grid.Column="2" Content="저장하기" Style="{StaticResource SecondaryButton}"
+                        Margin="0,0,6,0" Click="OnExportClick" />
+                <Button Grid.Column="3" Content="닫기" Style="{StaticResource SecondaryButton}" Click="OnCloseClick" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

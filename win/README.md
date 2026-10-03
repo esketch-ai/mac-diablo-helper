@@ -8,8 +8,21 @@ Win11 이관 버전입니다. 원본 macOS 코드(`d3key/`)는 그대로 두었�
 |---|---|
 | 코어 모델 / 입력 계층 / 엔진 / 서비스 | ✅ 완료, **테스트 106/106 통과** |
 | Phase 0 스파이크 (실기 검증) | ⏳ **Windows 11 실기에서 실행 필요** |
-| WPF UI | ⏳ 미착수 |
-| 패키징 (단일 exe, 관리자 권한) | ⏳ 미착수 |
+| WPF UI (3탭 + 트레이 + 프리셋 허브 + 가이드) | ✅ 완료 (Win11에서 렌더링 확인 필요) |
+| 패키징 (단일 exe, 관리자 권한) | ✅ 완료 — 64MB self-contained exe |
+
+코드 규모: C# 8,044줄 + XAML 1,043줄 (ObjC 8,124줄 대비 약간 작지만, Win32 마샬링이
+대신 들어갔고 회귀 테스트 106개가 추가됨).
+
+## 빌드
+
+```bash
+# 단일 exe (배포용)
+dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
+
+# 스파이크 (실기 검증용, .NET 런타임 필요)
+dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
+```
 
 ## 먼저 검증해야 할 것
 
@@ -46,6 +59,7 @@ dotnet publish src/DM_Helper.Spike -c Release -r win-x64 --self-contained false
 ```
 win/
 ├── DM_Helper.sln
+├── build-assets.py              macOS 아이콘 PNG → Windows .ico 생성
 ├── src/
 │   ├── DM_Helper.Core/          net8.0 — Windows targeting 불필요
 │   │   ├── Interop/             Win32 P/Invoke, SendInput, 저수준 훅, 모니터
@@ -53,12 +67,40 @@ win/
 │   │   ├── Models/              InputKey, KeyConfig(프리셋 7종), OpenerStep, PresetItem
 │   │   └── Services/            설정 저장, 다국어(146키×2), 구글시트, 데드존 필터
 │   ├── DM_Helper.Spike/         net8.0-windows — 실기 검증 콘솔 앱
-│   └── DM_Helper.Wpf/           (예정) UI
+│   └── DM_Helper.Wpf/           net8.0-windows — UI
+│       ├── app.manifest         관리자 권한 + PerMonitorV2
+│       ├── Assets/              .ico (build-assets.py 생성물)
+│       ├── Controls/            KeyCaptureBox, SkillRowControl
+│       ├── Services/            TrayIconController, AppServices
+│       ├── Themes/              Light.xaml, Dark.xaml (자동 전환)
+│       └── Views/               MainWindow, HelpWindow, PresetShareWindow
 └── tests/DM_Helper.Core.Tests/  106개 테스트
 ```
 
 `DM_Helper.Core`가 `net8.0`인 이유는 의도적입니다. Win32 관련 코드가 전부 P/Invoke라서
 어떤 OS에서도 컴파일되고, 도메인 로직과 interop 마샬링을 어느 머신에서든 테스트할 수
+있습니다.
+
+## macOS / Windows 주요 API 대응
+
+| macOS | Windows |
+|---|---|
+| `CGEventPost(kCGHIDEventTap)` | `SendInput` (Vk + ScanCode 동시 지정) |
+| `CGEventPostToPid` | 해당 없음 — SendInput이 전역이라 오히려 단순 |
+| `CGEventTapCreate(kCGHIDEventTap)` | `WH_KEYBOARD_LL` / `WH_MOUSE_LL` |
+| Accessibility(TCC) 권한 | `requireAdministrator` (UIPI 차단 회피) |
+| 합성 이벤트 태그 (`kCGEventSourceUserData`) | `LLKHF_INJECTED` 플래그 |
+| `NSWorkspace.frontmostApplication` | `GetForegroundWindow` |
+| `kVK_ANSI_*` | `VK_*` + `MapVirtualKey(MAPVK_VSC_TO_VK_EX)` |
+| `CGDisplayBounds` | `MonitorFromPoint` + `GetMonitorInfo` |
+| `NSStatusBar` | `NotifyIcon` (WinForms) |
+| `NSAttributedString(HTML)` 가이드 | 네이티브 WPF `TextBlock` |
+| `NSUserDefaults` | `%APPDATA%\DM_Helper\profiles\*.json` |
+| `dispatch_source` 타이머 | 마감시각 큐 + 전담 스레드 (`PreciseTimer`) |
+
+**관리자 권한이 필수인 이유**: `SendInput`은 UIPI의 적용을 받습니다. 디아블로4가 헬퍼보다
+높은 무결성 수준으로 실행되면 모든 합성 입력이 조용히 버려집니다. 권한을 낮게 유지하면서
+이 문제를 피할 방법은 없습니다 — 저수준 훅은 자신과 같거나 낮은 수준의 프로세스만 볼 수
 있습니다.
 
 ## macOS에서 빌드/테스트
@@ -72,4 +114,8 @@ dotnet test          # 106개 테스트, 약 5초
 
 - **ToS**: 게임 입력 자동화는 Blizzard 약관 위반 소지가 있습니다. 원본 macOS 버전과
   동일한 책임이며, 계정 제재 가능성을 감수해야 합니다.
-- WPF UI는 **Windows에서만** 빌드됩니다 (macOS/리눅스에서 `dotnet build` 불가).
+- WPF UI는 **Windows에서만 실행**됩니다. macOS에서 `dotnet build`는 컴파일만 검증하며
+  XAML 렌더링은 확인하지 않습니다.
+- **UI 실기 검증 미완료**: XAML은 컴파일러가 문법만 검사합니다. 레이아웃이 실제로
+  올바르게 그려지는지는 Win11에서 실행해 봐야 합니다. 특히 900px 폭에서 3탭 스크롤과
+  홀드 모드에서 ms 입력창 숨김 동작을 눈으로 확인하세요.
