@@ -37,4 +37,7 @@
 - (IBAction)showHelpWindow:(id)sender;
 - (IBAction)showPresetShareWindow:(id)sender;
 
+- (void)setFieldValues:(D3KeyConfig *)config;
+- (D3KeyConfig *)getFieldValues;
+
 @end

@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/platform-macOS%2010.13+%20|%20Windows%2011-brightgreen.svg" alt="Platform"/>
     <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel%20%7C%20x64-blue.svg" alt="Architecture"/>
     <img src="https://img.shields.io/badge/languages-English%20|%20Korean-blueviolet.svg" alt="Languages"/>
-    <img src="https://img.shields.io/badge/version-1.5-orange.svg" alt="Version"/>
+    <img src="https://img.shields.io/badge/version-1.5.1-orange.svg" alt="Version"/>
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"/>
   </p>
 </p>
@@ -161,7 +161,8 @@ A single tag carries builds for both platforms; the OS is named in each filename
 
 ### macOS
 
-- **[Download Latest v1.5 (dm_helper-1.5.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip)** — macOS 10.13+ (Apple Silicon & Intel Universal)
+- **[Download Latest v1.5.1 (dm_helper-1.5.1.zip)](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5.1/dm_helper-1.5.1.zip)** — macOS 10.13+ (Apple Silicon & Intel Universal)
+- [v1.5 Release](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip)
 - [v1.3 Release](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
 - [Original v1.2 Repository](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip)
 
@@ -206,6 +207,11 @@ dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
 ---
 
 ## 📝 Release Notes
+
+### v1.5.1 (Opener Sequence Repeat Count Expansion)
+- **Opener Sequence Repeat Count Expansion**: Added `15`, `20`, and `30` repeat options to opener sequence steps (supports 1~10, 15, 20, 30 repeats).
+- **Hardened Configuration Persistence**: Correctly saves and restores repeat values of 15 and above without regression.
+- **Cross-Platform Consistency**: Synchronized repeat count options across macOS and Windows editions.
 
 ### v1.5 (Rebranding, Cloud Preset Hub, Full Bilingual Localization & Ultimate Stability)
 - **Brand Rebranding**: Rebranded to **DM_Helper (Diablo Mac Helper)** with new high-resolution retina icon (1024x1024) and menu bar icon.

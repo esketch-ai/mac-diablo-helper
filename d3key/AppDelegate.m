@@ -35,7 +35,7 @@
     // 1. App name & Version
     NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
     NSString *appName = [info objectForKey:@"CFBundleDisplayName"] ?: @"DM_Helper";
-    NSString *appVer = [info objectForKey:@"CFBundleShortVersionString"] ?: @"1.5";
+    NSString *appVer = [info objectForKey:@"CFBundleShortVersionString"] ?: @"1.5.1";
     NSString *aboutTitle = [NSString stringWithFormat:@"%@ v%@", appName, appVer];
     NSMenuItem *aboutItem = [[NSMenuItem alloc] initWithTitle:aboutTitle action:@selector(statusPreferences:) keyEquivalent:@""];
     aboutItem.target = self;

@@ -104,6 +104,32 @@
 
 @end
 
+static const NSUInteger kOpenerRepeatOptions[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30};
+static const NSUInteger kOpenerRepeatOptionsCount = sizeof(kOpenerRepeatOptions) / sizeof(kOpenerRepeatOptions[0]);
+
+static NSInteger openerIndexForRepeatCount(NSUInteger repeatCount) {
+    NSInteger closestIndex = 0;
+    NSInteger minDiff = NSIntegerMax;
+    for (NSUInteger i = 0; i < kOpenerRepeatOptionsCount; i++) {
+        if (kOpenerRepeatOptions[i] == repeatCount) {
+            return (NSInteger)i;
+        }
+        NSInteger diff = labs((NSInteger)kOpenerRepeatOptions[i] - (NSInteger)repeatCount);
+        if (diff < minDiff) {
+            minDiff = diff;
+            closestIndex = (NSInteger)i;
+        }
+    }
+    return closestIndex;
+}
+
+static NSUInteger openerRepeatCountForIndex(NSInteger index) {
+    if (index >= 0 && (NSUInteger)index < kOpenerRepeatOptionsCount) {
+        return kOpenerRepeatOptions[index];
+    }
+    return 1;
+}
+
 @implementation MainWindowController
 
 - (void)windowDidLoad {
@@ -487,8 +513,8 @@
         [openerBox.contentView addSubview:[self labelWithText:D3Loc(@"unit_ms") frame:NSMakeRect(260, y, 25, 20) bold:NO]];
         
         _openerRepeatPopUps[i] = [[NSPopUpButton alloc] initWithFrame:NSMakeRect(295, y - 1, 85, 26) pullsDown:NO];
-        for (int r = 1; r <= 10; r++) {
-            [_openerRepeatPopUps[i] addItemWithTitle:D3LocFormat(@"opener_repeat_times", r)];
+        for (NSUInteger optIdx = 0; optIdx < kOpenerRepeatOptionsCount; optIdx++) {
+            [_openerRepeatPopUps[i] addItemWithTitle:D3LocFormat(@"opener_repeat_times", (int)kOpenerRepeatOptions[optIdx])];
         }
         _openerRepeatPopUps[i].target = self;
         _openerRepeatPopUps[i].action = @selector(checkboxClicked:);
@@ -740,7 +766,7 @@
         [_openerKeyFields[i] setInputKey:step.inputKey];
         _openerDelayFields[i].stringValue = [NSString stringWithFormat:@"%lu", (unsigned long)step.delayMs];
         
-        NSInteger repIndex = (step.repeatCount >= 1 && step.repeatCount <= 10) ? (step.repeatCount - 1) : 0;
+        NSInteger repIndex = openerIndexForRepeatCount(step.repeatCount);
         [_openerRepeatPopUps[i] selectItemAtIndex:repIndex];
         _openerDescFields[i].stringValue = step.stepDescription ?: @"";
     }
@@ -855,7 +881,7 @@
     for (int i = 0; i < 5; i++) {
         D3InputKey *key = _openerKeyFields[i].inputKey ?: [D3InputKey emptyKey];
         NSUInteger delay = [self parseDelayString:_openerDelayFields[i].stringValue defaultVal:150];
-        NSUInteger reps = _openerRepeatPopUps[i].indexOfSelectedItem + 1;
+        NSUInteger reps = openerRepeatCountForIndex(_openerRepeatPopUps[i].indexOfSelectedItem);
         NSString *desc = _openerDescFields[i].stringValue ?: @"";
         [config setOpenerStep:[D3OpenerStep stepWithKey:key delayMs:delay repeatCount:reps description:desc] atIndex:(i + 1)];
     }
@@ -1506,7 +1532,7 @@
                               @"<p>사냥을 시작할 때 버프를 켜고, 변신을 하고, 평타 3대로 스택을 쌓는 과정을 자동으로 실행합니다.</p>"
                               @"<ul>"
                               @"<li><b>메인 화면 원터치 키 설정</b>: 첫 번째 [기본 헬퍼] 화면의 <b>[시작 / 종료 & 준비 시퀀스 키]</b> 박스에서 '준비 키'와 '사용' 체크박스로 언제든 단축키를 설정하고 On/Off 할 수 있습니다.</li>"
-                              @"<li><b>스텝 구성 (최대 5단계)</b>: 스킬 키 + 실행 간격(ms) + 반복 횟수(1~10회) + 메모</li>"
+                              @"<li><b>스텝 구성 (최대 5단계)</b>: 스킬 키 + 실행 간격(ms) + 반복 횟수(1~10회, 15/20/30회) + 메모</li>"
                               @"<li><b>작동 원리</b>: 시작키(또는 상단 <b>[⚡️ 준비 시퀀스]</b> 버튼)를 누르면 1~5단계를 순차 완료한 뒤 본 전투 루프로 자동 전환됩니다.</li>"
                               @"<li><b>수동 트리거 키 (F1 등)</b>: 전투 중 버프가 꺼지거나 보스전에 진입했을 때 누르면 즉시 오프너를 1회 재실행합니다.</li>"
                               @"</ul>"
@@ -1528,7 +1554,7 @@
                               @"<p>Automatically triggers preparatory buffs, transformations, and stack builders before engaging in the main combat loop.</p>"
                               @"<ul>"
                               @"<li><b>One-Touch Setup on Tab 1</b>: Configure the Opener Key and toggle 'Enable' right from the main Basic Helper tab.</li>"
-                              @"<li><b>Up to 5 Steps</b>: Skill key + execution delay(ms) + repeat count(1~10) + memo.</li>"
+                              @"<li><b>Up to 5 Steps</b>: Skill key + execution delay(ms) + repeat count (1~10, 15, 20, 30) + memo.</li>"
                               @"<li><b>How it works</b>: Pressing start (or the top <b>[⚡️ Opener]</b> button) executes steps 1~5 in sequence then transitions to continuous combat.</li>"
                               @"<li><b>Manual Trigger Key (F1)</b>: Re-trigger opener anytime mid-combat when buffs expire or upon entering boss rooms.</li>"
                               @"</ul>"

@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using DM_Helper.Core.Models;
@@ -7,11 +8,13 @@ namespace DM_Helper.Wpf.Views;
 /// <summary>One row of the opener sequence editor (key, delay, repeat count, description).</summary>
 public partial class OpenerStepRow : UserControl
 {
+    private static readonly int[] RepeatOptions = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20, 30];
+
     public OpenerStepRow()
     {
         InitializeComponent();
 
-        for (var i = 1; i <= 5; i++) RepeatBox.Items.Add(i);
+        foreach (var opt in RepeatOptions) RepeatBox.Items.Add(opt);
 
         DelayBox.TextChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
         DescriptionBox.TextChanged += (_, _) => Changed?.Invoke(this, EventArgs.Empty);
@@ -27,7 +30,7 @@ public partial class OpenerStepRow : UserControl
     {
         KeyBox.InputKey = step.Key;
         DelayBox.Text = step.DelayMs.ToString();
-        RepeatBox.SelectedItem = Math.Clamp(step.RepeatCount, 1, 5);
+        RepeatBox.SelectedItem = RepeatOptions.Contains(step.RepeatCount) ? step.RepeatCount : 1;
         DescriptionBox.Text = step.Description;
     }
 

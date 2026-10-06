@@ -10,7 +10,7 @@
     <img src="https://img.shields.io/badge/platform-macOS%2010.13+%20|%20Windows%2011-brightgreen.svg" alt="Platform"/>
     <img src="https://img.shields.io/badge/arch-Apple%20Silicon%20%7C%20Intel%20%7C%20x64-blue.svg" alt="Architecture"/>
     <img src="https://img.shields.io/badge/languages-한국어%20|%20English-blueviolet.svg" alt="Languages"/>
-    <img src="https://img.shields.io/badge/version-1.5-orange.svg" alt="Version"/>
+    <img src="https://img.shields.io/badge/version-1.5.1-orange.svg" alt="Version"/>
     <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"/>
   </p>
 </p>
@@ -166,7 +166,8 @@
 
 ### macOS
 
-- [**1.5 최신 버전**](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
+- [**1.5.1 최신 버전**](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5.1/dm_helper-1.5.1.zip) — macOS 10.13 이상 (Apple Silicon / Intel 유니버설)
+- [1.5](https://github.com/esketch-ai/mac-diablo-helper/releases/download/v1.5/dm_helper-1.5.zip)
 - [1.3](https://github.com/esketch-ai/mac-diablo-helper/releases/download/1.3/d3d4a-1.3.zip)
 - [1.2](https://github.com/sunghyuk/D3-Skill-Assistant/releases/download/1.2/d3a-1.2.zip) (원본 저장소)
 
@@ -211,6 +212,11 @@ dotnet publish src/DM_Helper.Wpf -c Release -r win-x64
 ---
 
 ## 📝 변경사항
+
+### 1.5.1 (로테이션 & 준비 시퀀스 반복 횟수 확장)
+- **로테이션 & 준비 시퀀스 반복 횟수 확장**: 오프너 단계별 반복 횟수 옵션에 `15회`, `20회`, `30회` 추가 (1~10회, 15회, 20회, 30회 지원)
+- **설정 보존 및 UI 동기화 안정성 강화**: 15회 이상 반복 횟수 설정 시에도 프로필 저장 및 복원 시 값 정확히 유지
+- **플랫폼 일관성 동기화**: macOS 및 Windows 에디션 모두 동일한 반복 횟수 체계 지원
 
 ### 1.5 (DM_Helper 리브랜딩 & 클라우드 공유 & 다국어 지원 & 극강 안정성 개편)
 - **브랜드 네이밍 전면 통일**: 프로젝트명 및 UI 전반을 `DM_Helper (Diablo Mac Helper)`로 정식 리브랜딩

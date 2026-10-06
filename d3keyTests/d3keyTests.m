@@ -13,6 +13,7 @@
 #import "../d3key/D3PresetItem.h"
 #import "../d3key/D3GoogleSheetService.h"
 #import "../d3key/D3LocalizationManager.h"
+#import "../d3key/MainWindowController.h"
 #import <Carbon/Carbon.h>
 
 @interface d3keyTests : XCTestCase
@@ -298,9 +299,15 @@
     
     D3OpenerStep *step1 = [D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_1] delayMs:120 repeatCount:1 description:@"얼음 갑옷"];
     D3OpenerStep *step2 = [D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_4] delayMs:150 repeatCount:3 description:@"평타 스택"];
+    D3OpenerStep *step3 = [D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_2] delayMs:200 repeatCount:15 description:@"15회 반복"];
+    D3OpenerStep *step4 = [D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_3] delayMs:250 repeatCount:20 description:@"20회 반복"];
+    D3OpenerStep *step5 = [D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_5] delayMs:300 repeatCount:30 description:@"30회 반복"];
     
     [config setOpenerStep:step1 atIndex:1];
     [config setOpenerStep:step2 atIndex:2];
+    [config setOpenerStep:step3 atIndex:3];
+    [config setOpenerStep:step4 atIndex:4];
+    [config setOpenerStep:step5 atIndex:5];
     
     XCTAssertTrue(config.openerEnabled);
     XCTAssertEqual([config openerStepAtIndex:1].delayMs, (NSUInteger)120);
@@ -310,6 +317,10 @@
     XCTAssertEqual([config openerStepAtIndex:2].delayMs, (NSUInteger)150);
     XCTAssertEqual([config openerStepAtIndex:2].repeatCount, (NSUInteger)3);
     XCTAssertEqualObjects([config openerStepAtIndex:2].stepDescription, @"평타 스택");
+
+    XCTAssertEqual([config openerStepAtIndex:3].repeatCount, (NSUInteger)15);
+    XCTAssertEqual([config openerStepAtIndex:4].repeatCount, (NSUInteger)20);
+    XCTAssertEqual([config openerStepAtIndex:5].repeatCount, (NSUInteger)30);
     
     // Dictionary 직렬화 / 역직렬화 검증
     NSDictionary *dict = [config toDictionary];
@@ -322,6 +333,33 @@
     XCTAssertEqual([restored openerStepAtIndex:1].delayMs, (NSUInteger)120);
     XCTAssertEqual([restored openerStepAtIndex:2].repeatCount, (NSUInteger)3);
     XCTAssertEqualObjects([restored openerStepAtIndex:2].stepDescription, @"평타 스택");
+    XCTAssertEqual([restored openerStepAtIndex:3].repeatCount, (NSUInteger)15);
+    XCTAssertEqual([restored openerStepAtIndex:4].repeatCount, (NSUInteger)20);
+    XCTAssertEqual([restored openerStepAtIndex:5].repeatCount, (NSUInteger)30);
+}
+
+- (void)testOpenerRepeatCountUIIntegration {
+    MainWindowController *controller = [[MainWindowController alloc] initWithWindowNibName:@"MainMenu"];
+    (void)controller.window; // force window and UI load
+    
+    D3KeyConfig *config = [D3KeyConfig defaultKeyConfig];
+    config.openerEnabled = YES;
+    [config setOpenerStep:[D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_1] delayMs:100 repeatCount:10 description:@"10회"] atIndex:1];
+    [config setOpenerStep:[D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_2] delayMs:150 repeatCount:15 description:@"15회"] atIndex:2];
+    [config setOpenerStep:[D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_3] delayMs:200 repeatCount:20 description:@"20회"] atIndex:3];
+    [config setOpenerStep:[D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_4] delayMs:250 repeatCount:30 description:@"30회"] atIndex:4];
+    [config setOpenerStep:[D3OpenerStep stepWithKey:[D3InputKey keyWithKeyCode:kVK_ANSI_5] delayMs:300 repeatCount:1 description:@"1회"] atIndex:5];
+    
+    [controller setFieldValues:config];
+    D3KeyConfig *readBack = [controller getFieldValues];
+    
+    XCTAssertEqual([readBack openerStepAtIndex:1].repeatCount, (NSUInteger)10);
+    XCTAssertEqual([readBack openerStepAtIndex:2].repeatCount, (NSUInteger)15);
+    XCTAssertEqual([readBack openerStepAtIndex:3].repeatCount, (NSUInteger)20);
+    XCTAssertEqual([readBack openerStepAtIndex:4].repeatCount, (NSUInteger)30);
+    XCTAssertEqual([readBack openerStepAtIndex:5].repeatCount, (NSUInteger)1);
+    
+    [controller close];
 }
 
 - (void)testOpenerTriggerKeyAndCheckboxBehavior {
